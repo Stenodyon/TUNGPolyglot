@@ -21,9 +21,7 @@ namespace Polyglot
         public override void AfterPatch()
         {
             cmdHistory = new DropOutStack<string>(maxHistory);
-            Log("test 1");
-            Log("2");
-            Log("3");
+            Log("Polyglot initialized");
         }
 
         private string currentCmd = "";
@@ -38,12 +36,8 @@ namespace Polyglot
 
         public void ReadCmd()
         {
-            char prevC = '\0';
             foreach(char c in Input.inputString)
             {
-                if (c == prevC)
-                    continue;
-                prevC = c;
                 if (c == '\b') // has backspace/delete been pressed?
                 {
                     if (currentCmd.Length != 0)
