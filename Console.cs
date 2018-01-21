@@ -82,6 +82,8 @@ namespace Polyglot
                 font = Font.CreateDynamicFontFromOSFont("Lucida Console", 16)
             };
 
+            RegisterCommand("help", Command_help);
+            RegisterCommand("lsmod", Command_lsmod);
             RegisterCommand("lsfont", Command_lsfont);
             Log("Console initialized");
         }
@@ -265,5 +267,16 @@ namespace Polyglot
             }
         }
 
+        static void Command_lsmod(IEnumerable<string> args)
+        {
+            Log(LogType.ERROR, "Not implemented");
+        }
+
+        static void Command_help(IEnumerable<string> args)
+        {
+            Log("Here is a list of available commands:");
+            foreach(string name in registry.Keys)
+                Log(name);
+        }
     }
 }
