@@ -6,11 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using System.Net;
 
 namespace Polyglot
 {
     class Client
     {
+        private static int defaultPort = 4545;
         private string savesPath;
 
         public Client()
@@ -27,8 +29,9 @@ namespace Polyglot
                 File.Delete(saveName);
         }
 
-        private void Connect()
+        private void Connect(IPEndPoint host)
         {
+            Console.Log($"Connecting to {host.ToString()}");
             if (!Directory.Exists(savesPath))
                 Directory.CreateDirectory(savesPath);
             DeleteSave();
@@ -42,10 +45,29 @@ namespace Polyglot
             SceneManager.LoadScene("main menu");
         }
 
+        private IPEndPoint Parse(string host)
+        {
+            string[] hostname = host.Split(':');
+            if (hostname.Length != 1 && hostname.Length != 2)
+                throw new ArgumentException("Invalid address");
+
+            string domain = hostname[0];
+            int port = defaultPort;
+            if (hostname.Length == 2)
+                port = Int32.Parse(hostname[1]);
+            var dnslookup = Dns.GetHostAddresses(domain);
+            return new IPEndPoint(dnslookup[0], port);
+        }
+
         private void Command_connect(IEnumerable<string> args)
         {
-            Console.Log("Connecting...");
-            Connect();
+            if(args.Count() != 1)
+            {
+                Console.Log(LogType.ERROR, "Usage: connect host[:port]");
+                return;
+            }
+            IPEndPoint endpoint = Parse(args.ElementAt(0));
+            Connect(endpoint);
         }
 
         private void Command_disconnect(IEnumerable<string> args)
