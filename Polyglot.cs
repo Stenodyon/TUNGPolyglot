@@ -32,8 +32,8 @@ namespace Polyglot
             if(ModUtilities.IsOnMainMenu)
             {
                 string text = "Polyglot Loaded (TAB for console)";
-                ModUtilities.Graphics.DrawText(text, new Vector2(6, 16), Color.black);
-                ModUtilities.Graphics.DrawText(text, new Vector2(5, 15), Color.white);
+                ModUtilities.Graphics.DrawText(text, new Vector2(6, 21), Color.black);
+                ModUtilities.Graphics.DrawText(text, new Vector2(5, 20), Color.white);
             }
             Console.Draw();
         }

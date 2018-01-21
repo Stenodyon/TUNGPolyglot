@@ -62,6 +62,20 @@ namespace Polyglot
             if (Input.GetKeyDown(KeyCode.Tab))
                 show = !show;
 
+            if(Input.GetKeyDown(KeyCode.UpArrow) && historySelector < history.Count - 1)
+            {
+                historySelector += 1;
+                currentCmd = history.Get(historySelector);
+            }
+            if(Input.GetKeyDown(KeyCode.DownArrow) && historySelector > -1)
+            {
+                historySelector -= 1;
+                if (historySelector == -1)
+                    currentCmd = "";
+                else
+                    currentCmd = history.Get(historySelector);
+            }
+
             if (show)
                 ReadInput();
         }
