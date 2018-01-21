@@ -48,7 +48,6 @@ namespace Polyglot
     }
 
     //TODO: Moving cursor within command for edition
-    //TODO: Document
 
     /// <summary>
     /// In game console
