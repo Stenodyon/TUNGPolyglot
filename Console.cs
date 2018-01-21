@@ -8,15 +8,48 @@ using UnityEngine;
 
 namespace Polyglot
 {
-    delegate void CommandExecutor(IEnumerable<string> arguments);
+    public delegate void CommandExecutor(IEnumerable<string> arguments);
 
-    class Console
+    public enum LogType
+    {
+        INFO,
+        USERINPUT,
+        ERROR
+    }
+
+    internal class LogEntry
+    {
+        public LogType Type { get; private set; }
+        public string Message { get; private set; }
+
+        public LogEntry(LogType type, string message)
+        {
+            this.Type = type;
+            this.Message = message;
+        }
+
+        public Color GetColor()
+        {
+            switch(Type)
+            {
+                case LogType.INFO:
+                    return Color.white;
+                case LogType.USERINPUT:
+                    return Color.cyan;
+                case LogType.ERROR:
+                    return Color.red;
+            }
+            return Color.white;
+        }
+    }
+
+    public class Console
     {
         private static int maxHistory = 100;
         private static int lineHeight = 16;
         private static GUIStyle style;
 
-        private static DropOutStack<String> cmdLog;
+        private static DropOutStack<LogEntry> cmdLog;
         private static DropOutStack<String> history;
         private static int historySelector = -1;
         private static string currentCmd = "";
@@ -27,7 +60,7 @@ namespace Polyglot
 
         public static void Init()
         {
-            cmdLog = new DropOutStack<string>(maxHistory);
+            cmdLog = new DropOutStack<LogEntry>(maxHistory);
             history = new DropOutStack<string>(maxHistory);
             registry = new Dictionary<string, CommandExecutor>();
             style = new GUIStyle
@@ -74,20 +107,26 @@ namespace Polyglot
             ModUtilities.Graphics.DrawRect(new Rect(0, 0, width, linecount * lineHeight + 5), background);
             for(int line = 0; line < Math.Min(linecount - 1, cmdLog.Count); line++)
             {
+                LogEntry entry = cmdLog.Get(line);
                 int y = (linecount - 2 - line) * lineHeight;
-                DrawText(cmdLog.Get(line), new Vector2(5, y), Color.white);
+                DrawText(entry.Message, new Vector2(5, y), entry.GetColor());
             }
             int consoleY = (linecount - 1) * lineHeight;
             DrawText("> " + currentCmd + "_", new Vector2(5, consoleY), Color.green);
         }
 
-        public static void Log(string msg)
+        public static void Log(LogType type, string msg)
         {
             string[] lines = msg.Split('\n');
             foreach(string line in lines)
             {
-                cmdLog.Push(line);
+                cmdLog.Push(new LogEntry(type, line));
             }
+        }
+
+        public static void Log(string msg)
+        {
+            Log(LogType.INFO, msg);
         }
 
         public static bool RegisterCommand(string name, CommandExecutor callback)
@@ -122,12 +161,12 @@ namespace Polyglot
                     executor(words.Skip(1));
                 } catch(Exception e)
                 {
-                    Log(e.ToString());
+                    Log(LogType.ERROR, e.ToString());
                 }
             }
             else
             {
-                Log($"Unrecognized command {verb}");
+                Log(LogType.ERROR, $"Unrecognized command {verb}");
             }
         }
 
@@ -144,7 +183,7 @@ namespace Polyglot
                 }
                 else if ((c == '\n') || (c == '\r')) // enter/return
                 {
-                    Log("> " + currentCmd);
+                    Log(LogType.USERINPUT, "> " + currentCmd);
                     history.Push(currentCmd);
                     ExecuteCommand(currentCmd);
                     currentCmd = "";
@@ -171,7 +210,7 @@ namespace Polyglot
             if (args.Count() > 1)
             {
                 string extras = String.Join(" ", args.Skip(1).ToArray());
-                Log($"Invalid arguments: \"{extras}\"");
+                Log(LogType.ERROR, $"Invalid arguments: \"{extras}\"");
                 return;
             }
             string contained = "";
