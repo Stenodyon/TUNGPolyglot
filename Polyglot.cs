@@ -12,8 +12,6 @@ namespace Polyglot
 
         protected override KeyCode[] ModKeys => new[] { KeyCode.Tab };
 
-        private bool showConsole = false;
-
         public override void AfterPatch()
         {
             Console.Init();
@@ -22,10 +20,7 @@ namespace Polyglot
 
         public override void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Tab))
-                showConsole = !showConsole;
-            if (showConsole)
-                Console.ReadInput();
+            Console.Update();
         }
 
         public void ExecuteCmd(string cmd)
@@ -40,8 +35,7 @@ namespace Polyglot
                 ModUtilities.Graphics.DrawText(text, new Vector2(6, 16), Color.black);
                 ModUtilities.Graphics.DrawText(text, new Vector2(5, 15), Color.white);
             }
-            if (showConsole)
-                Console.Draw();
+            Console.Draw();
         }
 
         public override void OnKeyDown(KeyCode key)

@@ -16,8 +16,12 @@ namespace Polyglot
         private static int lineHeight = 16;
         private static GUIStyle style;
 
-        private static DropOutStack<String> cmdHistory;
+        private static DropOutStack<String> cmdLog;
+        private static DropOutStack<String> history;
+        private static int historySelector = -1;
         private static string currentCmd = "";
+
+        public static bool show = false;
 
         public static CommandExecutor executors = delegate { };
 
@@ -44,7 +48,8 @@ namespace Polyglot
         public static void Init()
         {
             executors += ConsoleCommands;
-            cmdHistory = new DropOutStack<string>(maxHistory);
+            cmdLog = new DropOutStack<string>(maxHistory);
+            history = new DropOutStack<string>(maxHistory);
             style = new GUIStyle
             {
                 font = Font.CreateDynamicFontFromOSFont("Lucida Console", 16)
@@ -52,9 +57,18 @@ namespace Polyglot
             Log("Console initialized");
         }
 
+        public static void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Tab))
+                show = !show;
+
+            if (show)
+                ReadInput();
+        }
+
         public static void Log(string msg)
         {
-            cmdHistory.Push(msg);
+            cmdLog.Push(msg);
         }
 
         public static void ReadInput()
@@ -72,6 +86,7 @@ namespace Polyglot
                 {
                     Log("> " + currentCmd);
                     executors(currentCmd);
+                    history.Push(currentCmd);
                     currentCmd = "";
                 }
                 else
@@ -83,16 +98,18 @@ namespace Polyglot
 
         public static void Draw()
         {
+            if (!show)
+                return;
             Color background = Color.black;
             background.a = 0.5f;
             int height = Screen.height / 2;
             int width = Screen.width;
             int linecount = height / lineHeight;
             ModUtilities.Graphics.DrawRect(new Rect(0, 0, width, linecount * lineHeight + 5), background);
-            for(int line = 0; line < Math.Min(linecount - 1, cmdHistory.Count); line++)
+            for(int line = 0; line < Math.Min(linecount - 1, cmdLog.Count); line++)
             {
                 int y = (linecount - 2 - line) * lineHeight;
-                DrawText(cmdHistory.Get(line), new Vector2(5, y), Color.white);
+                DrawText(cmdLog.Get(line), new Vector2(5, y), Color.white);
             }
             int consoleY = (linecount - 1) * lineHeight;
             DrawText("> " + currentCmd + "_", new Vector2(5, consoleY), Color.green);
