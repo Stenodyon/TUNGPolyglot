@@ -10,8 +10,6 @@ namespace Polyglot
         public override string ModAuthor => "Stenodyon";
         public override Version ModVersion => new Version(0, 1, 0);
 
-        protected override KeyCode[] ModKeys => new[] { KeyCode.Tab };
-
         public override void AfterPatch()
         {
             Console.Init();
@@ -23,10 +21,6 @@ namespace Polyglot
             Console.Update();
         }
 
-        public void ExecuteCmd(string cmd)
-        {
-        }
-
         public override void OnGUI()
         {
             if(ModUtilities.IsOnMainMenu)
@@ -36,10 +30,6 @@ namespace Polyglot
                 ModUtilities.Graphics.DrawText(text, new Vector2(5, 20), Color.white);
             }
             Console.Draw();
-        }
-
-        public override void OnKeyDown(KeyCode key)
-        {
         }
     }
 }
