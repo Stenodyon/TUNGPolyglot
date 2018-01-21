@@ -262,3 +262,4 @@ __pycache__/
 
 # Visual Studio solution
 *.sln
+Assembly-CSharp.original.dll
