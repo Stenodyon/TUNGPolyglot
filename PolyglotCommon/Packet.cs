@@ -27,6 +27,7 @@ namespace PolyglotCommon
     [Serializable]
     public class PlayerPosition : Packet
     {
+        public int PlayerID { get; set; }
         public Vector3 Pos { get; set; }
     }
 }
