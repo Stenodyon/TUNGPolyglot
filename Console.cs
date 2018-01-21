@@ -10,6 +10,9 @@ namespace Polyglot
 {
     public delegate void CommandExecutor(IEnumerable<string> arguments);
 
+    /// <summary>
+    /// Type of a log (should be self-explanatory
+    /// </summary>
     public enum LogType
     {
         INFO,
@@ -17,6 +20,9 @@ namespace Polyglot
         ERROR
     }
 
+    /// <summary>
+    /// A line of log. It has a message and a log type
+    /// </summary>
     internal class LogEntry
     {
         public LogType Type { get; private set; }
@@ -43,6 +49,14 @@ namespace Polyglot
         }
     }
 
+    //TODO: Moving cursor within command for edition
+    //TODO: Document
+
+    /// <summary>
+    /// In game console
+    /// <para>This static class allows for logging and registering commands
+    /// which will be executed by callbacks</para>
+    /// </summary>
     public class Console
     {
         private static int maxHistory = 100;
@@ -58,6 +72,9 @@ namespace Polyglot
 
         public static bool show = false;
 
+        /// <summary>
+        /// Call this function before doing anything with the console
+        /// </summary>
         public static void Init()
         {
             cmdLog = new DropOutStack<LogEntry>(maxHistory);
@@ -72,6 +89,9 @@ namespace Polyglot
             Log("Console initialized");
         }
 
+        /// <summary>
+        /// Call this function on Update calls
+        /// </summary>
         public static void Update()
         {
             if (Input.GetKeyDown(KeyCode.Tab))
@@ -95,6 +115,9 @@ namespace Polyglot
                 ReadInput();
         }
 
+        /// <summary>
+        /// Call this function on OnGUI calls
+        /// </summary>
         public static void Draw()
         {
             if (!show)
@@ -115,6 +138,11 @@ namespace Polyglot
             DrawText("> " + currentCmd + "_", new Vector2(5, consoleY), Color.green);
         }
 
+        /// <summary>
+        /// Log a message to the console (can be multiline)
+        /// </summary>
+        /// <param name="type">Type of log <see cref="LogType"/></param>
+        /// <param name="msg">Message to log</param>
         public static void Log(LogType type, string msg)
         {
             string[] lines = msg.Split('\n');
@@ -124,11 +152,23 @@ namespace Polyglot
             }
         }
 
+        /// <summary>
+        /// Logs a message as simple info
+        /// </summary>
+        /// <param name="msg">Message to log</param>
         public static void Log(string msg)
         {
             Log(LogType.INFO, msg);
         }
 
+        /// <summary>
+        /// Register a command with a callback
+        /// </summary>
+        /// <param name="name">Name of the command. This is what is typed in the
+        /// console to invoke the command</param>
+        /// <param name="callback">The callback which is called when the command
+        /// is invoked. Its arguments are the arguments of the command</param>
+        /// <returns>True of succeeded, false otherwise</returns>
         public static bool RegisterCommand(string name, CommandExecutor callback)
         {
             if (registry.ContainsKey(name))
@@ -137,6 +177,11 @@ namespace Polyglot
             return true;
         }
 
+        /// <summary>
+        /// Removes a command from the registry
+        /// </summary>
+        /// <param name="name">Name of the command to remove</param>
+        /// <returns>True if a command was removed, false otherwise</returns>
         public static bool UnregisterCommand(string name)
         {
             if(registry.ContainsKey(name))
