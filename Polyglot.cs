@@ -13,7 +13,7 @@ namespace Polyglot
         public override void AfterPatch()
         {
             Console.Init();
-            Console.Log("Polyglot initialized");
+            Console.Log($"Polyglot v{ModVersion.ToString()} initialized");
         }
 
         public override void Update()
