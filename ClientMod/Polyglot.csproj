@@ -56,10 +56,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client.cs" />
+    <Compile Include="ClientConnection.cs" />
     <Compile Include="Console.cs" />
     <Compile Include="DropOutStack.cs" />
     <Compile Include="Polyglot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PolyglotCommon\PolyglotCommon.csproj">
+      <Project>{73e4eb69-58ce-4530-b2c6-0e8cdaea222b}</Project>
+      <Name>PolyglotCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -17,4 +17,16 @@ namespace PolyglotCommon
     {
         public int ID { get; set; }
     }
+
+    [Serializable]
+    public class NewPlayer : Packet
+    {
+        public int ID { get; set; }
+    }
+
+    [Serializable]
+    public class PlayerPosition : Packet
+    {
+        public Vector3 Pos { get; set; }
+    }
 }
