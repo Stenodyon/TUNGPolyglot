@@ -10,6 +10,13 @@ namespace PolyglotServer
     {
         static void Main(string[] args)
         {
+            Server server = new Server(4545);
+            string cmd = "";
+            while(cmd != "exit" && cmd != "stop")
+            {
+                cmd = Console.ReadLine();
+            }
+            server.Stop();
         }
     }
 }

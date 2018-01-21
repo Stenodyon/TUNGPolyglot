@@ -9,7 +9,7 @@ using System.Threading;
 using PolyglotCommon;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Polyglot
+namespace PolyglotServer
 {
     internal enum Status
     {
@@ -17,21 +17,27 @@ namespace Polyglot
         Connected
     }
 
-    class ClientConnection
+    class Player
     {
+        private static int GlobalID = 0;
+
+        public int ID { get; private set; }
+
+        private Server server;
         private TcpClient client;
-        private Status status = Status.Disconnected;
+        private Status status = Status.Connected;
+        private Queue<Packet> packetQueue;
 
         private Thread sendThread;
         private Thread receiveThread;
 
-        private Queue<Packet> packetQueue;
-
-        public ClientConnection(string address, int port)
+        public Player(TcpClient client, Server server)
         {
-            client = new TcpClient();
-            client.Connect(address, port);
-            status = Status.Connected;
+            this.server = server;
+            this.ID = GlobalID;
+            GlobalID++;
+            this.client = client;
+            this.packetQueue = new Queue<Packet>();
 
             sendThread = new Thread(this.SendThread);
             sendThread.IsBackground = true;
@@ -41,19 +47,24 @@ namespace Polyglot
             receiveThread.IsBackground = true;
             receiveThread.Start();
 
-            packetQueue = new Queue<Packet>();
+            SendPacket(new PlayerIDAttribution(ID));
+        }
+
+        public void DisconnectNoNotify()
+        {
+            client.Close();
+            status = Status.Disconnected;
         }
 
         public void Disconnect()
         {
-            if (status != Status.Disconnected)
-                client.Close();
-            status = Status.Disconnected;
+            DisconnectNoNotify();
+            server.OnPlayerDisconnect(this);
         }
 
         public void SendPacket(Packet packet)
         {
-            packetQueue.Enqueue(packet);
+            this.packetQueue.Enqueue(packet);
         }
 
         private void SendThread()
@@ -69,7 +80,7 @@ namespace Polyglot
                         formatter.Serialize(client.GetStream(), packet);
                     } catch(Exception e)
                     {
-                        Console.Log(LogType.ERROR, e.ToString());
+                        Console.WriteLine(e.ToString());
                         Disconnect();
                     }
                 }
@@ -85,15 +96,10 @@ namespace Polyglot
                 {
                     BinaryFormatter formatter = new BinaryFormatter();
                     Packet packet = formatter.Deserialize(client.GetStream()) as Packet;
-                    OnPacketReceived(packet);
+                    server.OnReceivedPacket(this, packet);
                 }
                 Thread.Sleep(30);
             }
-        }
-
-        private void OnPacketReceived(Packet packet)
-        {
-            Console.Log($"Received {packet.GetType().ToString()}");
         }
     }
 }

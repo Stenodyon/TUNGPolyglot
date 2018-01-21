@@ -15,6 +15,8 @@ namespace Polyglot
         private static int defaultPort = 4545;
         private string savesPath;
 
+        private ClientConnection connection;
+
         public Client()
         {
             Console.RegisterCommand("connect", this.Command_connect);
@@ -29,9 +31,10 @@ namespace Polyglot
                 File.Delete(saveName);
         }
 
-        private void Connect(IPEndPoint host)
+        private void Connect(string address, int port)
         {
-            Console.Log($"Connecting to {host.ToString()}");
+            Console.Log($"Connecting to {address}:{port}");
+            connection = new ClientConnection(address, port);
             if (!Directory.Exists(savesPath))
                 Directory.CreateDirectory(savesPath);
             DeleteSave();
@@ -45,20 +48,6 @@ namespace Polyglot
             SceneManager.LoadScene("main menu");
         }
 
-        private IPEndPoint Parse(string host)
-        {
-            string[] hostname = host.Split(':');
-            if (hostname.Length != 1 && hostname.Length != 2)
-                throw new ArgumentException("Invalid address");
-
-            string domain = hostname[0];
-            int port = defaultPort;
-            if (hostname.Length == 2)
-                port = Int32.Parse(hostname[1]);
-            var dnslookup = Dns.GetHostAddresses(domain);
-            return new IPEndPoint(dnslookup[0], port);
-        }
-
         private void Command_connect(IEnumerable<string> args)
         {
             if(args.Count() != 1)
@@ -66,8 +55,11 @@ namespace Polyglot
                 Console.Log(LogType.ERROR, "Usage: connect host[:port]");
                 return;
             }
-            IPEndPoint endpoint = Parse(args.ElementAt(0));
-            Connect(endpoint);
+            string[] parts = args.ElementAt(0).Split(':');
+            int port = 4545;
+            if (parts.Length > 1)
+                port = Int32.Parse(parts[1]);
+            Connect(parts[0], port);
         }
 
         private void Command_disconnect(IEnumerable<string> args)
