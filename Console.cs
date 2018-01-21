@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Polyglot
 {
-    delegate void CommandExecutor(string command);
+    delegate void CommandExecutor(IEnumerable<string> arguments);
 
     class Console
     {
@@ -21,39 +21,21 @@ namespace Polyglot
         private static int historySelector = -1;
         private static string currentCmd = "";
 
+        private static Dictionary<string, CommandExecutor> registry;
+
         public static bool show = false;
-
-        public static CommandExecutor executors = delegate { };
-
-        static void ConsoleCommands(string cmd)
-        {
-            if(cmd.StartsWith("lsfont"))
-            {
-                string[] words = cmd.Split(' ');
-                string contained = "";
-                if (words.Length == 2)
-                    contained = words[1];
-                foreach(string name in Font.GetOSInstalledFontNames())
-                {
-                    if (name.ToLower().Contains(contained))
-                        Log(name);
-                }
-            }
-            else
-            {
-                Log($"{cmd} is not recognized");
-            }
-        }
 
         public static void Init()
         {
-            executors += ConsoleCommands;
             cmdLog = new DropOutStack<string>(maxHistory);
             history = new DropOutStack<string>(maxHistory);
+            registry = new Dictionary<string, CommandExecutor>();
             style = new GUIStyle
             {
                 font = Font.CreateDynamicFontFromOSFont("Lucida Console", 16)
             };
+
+            RegisterCommand("lsfont", Command_lsfont);
             Log("Console initialized");
         }
 
@@ -80,36 +62,6 @@ namespace Polyglot
                 ReadInput();
         }
 
-        public static void Log(string msg)
-        {
-            cmdLog.Push(msg);
-        }
-
-        public static void ReadInput()
-        {
-            foreach(char c in Input.inputString)
-            {
-                if (c == '\b') // has backspace/delete been pressed?
-                {
-                    if (currentCmd.Length != 0)
-                    {
-                        currentCmd = currentCmd.Substring(0, currentCmd.Length - 1);
-                    }
-                }
-                else if ((c == '\n') || (c == '\r')) // enter/return
-                {
-                    Log("> " + currentCmd);
-                    executors(currentCmd);
-                    history.Push(currentCmd);
-                    currentCmd = "";
-                }
-                else
-                {
-                    currentCmd += c;
-                }
-            }
-        }
-
         public static void Draw()
         {
             if (!show)
@@ -129,6 +81,71 @@ namespace Polyglot
             DrawText("> " + currentCmd + "_", new Vector2(5, consoleY), Color.green);
         }
 
+        public static void Log(string msg)
+        {
+            string[] lines = msg.Split('\n');
+            foreach(string line in lines)
+            {
+                cmdLog.Push(line);
+            }
+        }
+
+        public static bool RegisterCommand(string name, CommandExecutor callback)
+        {
+            if (registry.ContainsKey(name))
+                return false;
+            registry.Add(name, callback);
+            return true;
+        }
+
+        private static void ExecuteCommand(string cmd)
+        {
+            string[] words = cmd.Split(' ');
+            if (words.Length == 0)
+                return;
+            string verb = words[0];
+            if (registry.ContainsKey(verb))
+            {
+                CommandExecutor executor = registry[verb];
+                try
+                {
+                    executor(words.Skip(1));
+                } catch(Exception e)
+                {
+                    Log(e.ToString());
+                }
+            }
+            else
+            {
+                Log($"Unrecognized command {verb}");
+            }
+        }
+
+        private static void ReadInput()
+        {
+            foreach(char c in Input.inputString)
+            {
+                if (c == '\b') // has backspace/delete been pressed?
+                {
+                    if (currentCmd.Length != 0)
+                    {
+                        currentCmd = currentCmd.Substring(0, currentCmd.Length - 1);
+                    }
+                }
+                else if ((c == '\n') || (c == '\r')) // enter/return
+                {
+                    Log("> " + currentCmd);
+                    history.Push(currentCmd);
+                    ExecuteCommand(currentCmd);
+                    currentCmd = "";
+                }
+                else
+                {
+                    currentCmd += c;
+                }
+            }
+        }
+
         static void DrawText(string text, Vector2 pos, Color color)
         {
             GUIStyle newStyle = new GUIStyle(style);
@@ -137,6 +154,24 @@ namespace Polyglot
             Rect rect = new Rect(pos, size);
 
             GUI.Label(rect, text, newStyle);
+        }
+
+        static void Command_lsfont(IEnumerable<string> args)
+        {
+            if (args.Count() > 1)
+            {
+                string extras = String.Join(" ", args.Skip(1).ToArray());
+                Log($"Invalid arguments: \"{extras}\"");
+                return;
+            }
+            string contained = "";
+            if (args.Count() == 1)
+                contained = args.ElementAt(0);
+            foreach (string name in Font.GetOSInstalledFontNames())
+            {
+                if (name.ToLower().Contains(contained))
+                    Log(name);
+            }
         }
 
     }
