@@ -98,6 +98,16 @@ namespace Polyglot
             return true;
         }
 
+        public static bool UnregisterCommand(string name)
+        {
+            if(registry.ContainsKey(name))
+            {
+                registry.Remove(name);
+                return true;
+            }
+            return false;
+        }
+
         private static void ExecuteCommand(string cmd)
         {
             string[] words = cmd.Split(' ');
