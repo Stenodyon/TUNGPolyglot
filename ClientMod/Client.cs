@@ -6,6 +6,7 @@ using System.Text;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Net;
+using PiTung_Bootstrap;
 
 namespace Polyglot
 {
@@ -56,15 +57,6 @@ namespace Polyglot
         {
             if(connection != null)
                 connection.Disconnect();
-            if (SceneManager.GetActiveScene().name == "gameplay")
-            {
-                UIManager.UnlockMouseAndDisableFirstPersonLooking();
-                SceneManager.LoadScene("main menu");
-            }
-            else
-            {
-                Console.Log("Not currently connected");
-            }
         }
 
         private void Command_connect(IEnumerable<string> args)
@@ -85,6 +77,15 @@ namespace Polyglot
         {
             Console.Log("Disconnecting...");
             Disconnect();
+            if (SceneManager.GetActiveScene().name == "gameplay")
+            {
+                UIManager.UnlockMouseAndDisableFirstPersonLooking();
+                SceneManager.LoadScene("main menu");
+            }
+            else
+            {
+                Console.Log("Not currently connected");
+            }
         }
     }
 }

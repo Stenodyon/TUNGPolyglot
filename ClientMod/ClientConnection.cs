@@ -74,6 +74,15 @@ namespace Polyglot
                 return;
             }
             player = playerObject.transform;
+            SceneManager.activeSceneChanged += DisconnectOnLeave;
+        }
+
+        private void DisconnectOnLeave(Scene arg0, Scene arg1)
+        {
+            if (SceneManager.GetActiveScene().name == "gameplay")
+                return;
+            SceneManager.activeSceneChanged -= DisconnectOnLeave;
+            Disconnect();
         }
 
         public void Disconnect()
