@@ -161,6 +161,15 @@ namespace Polyglot
         }
 
         /// <summary>
+        /// Logs an error message
+        /// </summary>
+        /// <param name="msg">Message to log</param>
+        public static void Error(string msg)
+        {
+            Log(LogType.ERROR, msg);
+        }
+
+        /// <summary>
         /// Register a command with a callback
         /// </summary>
         /// <param name="name">Name of the command. This is what is typed in the

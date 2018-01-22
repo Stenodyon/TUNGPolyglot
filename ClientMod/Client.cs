@@ -44,6 +44,8 @@ namespace Polyglot
 
         private void Disconnect()
         {
+            if(connection != null)
+                connection.Disconnect();
             UIManager.UnlockMouseAndDisableFirstPersonLooking();
             SceneManager.LoadScene("main menu");
         }
