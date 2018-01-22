@@ -69,6 +69,7 @@ namespace PolyglotServer
 
         private void SendThread()
         {
+            Console.WriteLine("Started sender thread for player");
             while(status != Status.Disconnected)
             {
                 if(packetQueue.Count > 0)
@@ -78,6 +79,7 @@ namespace PolyglotServer
                     try
                     {
                         formatter.Serialize(client.GetStream(), packet);
+                        Console.WriteLine($"Sent {packet.GetType().ToString()}");
                     } catch(Exception e)
                     {
                         Console.WriteLine(e.ToString());
@@ -90,6 +92,7 @@ namespace PolyglotServer
 
         private void ReceiveThread()
         {
+            Console.WriteLine("Started receiver thread for player");
             while(status != Status.Disconnected)
             {
                 if(client.Available > 0)

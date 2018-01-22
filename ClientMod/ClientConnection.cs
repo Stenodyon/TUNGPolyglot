@@ -58,6 +58,7 @@ namespace Polyglot
 
         private void SendThread()
         {
+            Console.Log("Starting sender thread");
             while(status != Status.Disconnected)
             {
                 if(packetQueue.Count > 0)
@@ -67,6 +68,7 @@ namespace Polyglot
                     try
                     {
                         formatter.Serialize(client.GetStream(), packet);
+                        Console.Log($"Sent {packet.GetType().ToString()}");
                     } catch(Exception e)
                     {
                         Console.Log(LogType.ERROR, e.ToString());
@@ -79,6 +81,7 @@ namespace Polyglot
 
         private void ReceiveThread()
         {
+            Console.Log("Starting receiver thread");
             while(status != Status.Disconnected)
             {
                 if(client.Available > 0)
