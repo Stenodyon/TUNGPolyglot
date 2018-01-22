@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
@@ -61,6 +62,7 @@ namespace PolyglotServer
 
         public void Disconnect()
         {
+            Console.WriteLine($"Player {ID} disconnected");
             DisconnectNoNotify();
             server.OnPlayerDisconnect(this);
         }
@@ -72,7 +74,6 @@ namespace PolyglotServer
 
         private void SendThread()
         {
-            Console.WriteLine("Started sender thread for player");
             while(status != Status.Disconnected)
             {
                 if(packetQueue.Count > 0)
@@ -82,7 +83,10 @@ namespace PolyglotServer
                     try
                     {
                         formatter.Serialize(client.GetStream(), packet);
-                        Console.WriteLine($"Sent {packet.GetType().ToString()}");
+                        //Console.WriteLine($"Sent {packet.GetType().ToString()}");
+                    } catch(IOException) // Connection terminated
+                    {
+                        Disconnect();
                     } catch(Exception e)
                     {
                         Console.WriteLine(e.ToString());
@@ -95,7 +99,6 @@ namespace PolyglotServer
 
         private void ReceiveThread()
         {
-            Console.WriteLine("Started receiver thread for player");
             while(status != Status.Disconnected)
             {
                 if(client.Available > 0)
@@ -105,6 +108,9 @@ namespace PolyglotServer
                         BinaryFormatter formatter = new BinaryFormatter();
                         Packet packet = formatter.Deserialize(client.GetStream()) as Packet;
                         server.OnReceivedPacket(this, packet);
+                    } catch(IOException) // Connection terminated
+                    {
+                        Disconnect();
                     } catch(Exception e)
                     {
                         Console.WriteLine(e.ToString());

@@ -35,7 +35,7 @@ namespace Polyglot
         private Queue<Packet> receiveQueue;
 
         private int lastSyncTime;
-        private static int SyncDelay = 1000/30;
+        private static int SyncDelay = 1000/10;
 
         private Transform player;
         private bool inGameplay = false;
