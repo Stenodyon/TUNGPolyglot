@@ -21,17 +21,25 @@ namespace Polyglot
     {
         private TcpClient client;
         private Status status = Status.Disconnected;
+        public Status Status { get { return this.status; } }
 
         private Thread sendThread;
         private Thread receiveThread;
 
-        private Queue<Packet> packetQueue;
+        // Player ID, Player
+        private Dictionary<int, RemotePlayer> players;
+        public Nullable<int> ID { get; private set; }
+
+        private Queue<Packet> sendQueue;
+        private Queue<Packet> receiveQueue;
 
         public ClientConnection(string address, int port)
         {
             client = new TcpClient();
             client.Connect(address, port);
             status = Status.Connected;
+            sendQueue = new Queue<Packet>();
+            receiveQueue = new Queue<Packet>();
 
             sendThread = new Thread(this.SendThread);
             sendThread.IsBackground = true;
@@ -40,8 +48,6 @@ namespace Polyglot
             receiveThread = new Thread(this.ReceiveThread);
             receiveThread.IsBackground = true;
             receiveThread.Start();
-
-            packetQueue = new Queue<Packet>();
         }
 
         public void Disconnect()
@@ -53,7 +59,7 @@ namespace Polyglot
 
         public void SendPacket(Packet packet)
         {
-            packetQueue.Enqueue(packet);
+            sendQueue.Enqueue(packet);
         }
 
         private void SendThread()
@@ -61,9 +67,9 @@ namespace Polyglot
             Console.Log("Starting sender thread");
             while(status != Status.Disconnected)
             {
-                if(packetQueue.Count > 0)
+                if(sendQueue.Count > 0)
                 {
-                    Packet packet = packetQueue.Dequeue();
+                    Packet packet = sendQueue.Dequeue();
                     BinaryFormatter formatter = new BinaryFormatter();
                     try
                     {
@@ -77,6 +83,7 @@ namespace Polyglot
                 }
                 Thread.Sleep(30);
             }
+            Console.Log("Sender thread stopped");
         }
 
         private void ReceiveThread()
@@ -86,17 +93,53 @@ namespace Polyglot
             {
                 if(client.Available > 0)
                 {
-                    BinaryFormatter formatter = new BinaryFormatter();
-                    Packet packet = formatter.Deserialize(client.GetStream()) as Packet;
-                    OnPacketReceived(packet);
+                    try
+                    {
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        Packet packet = formatter.Deserialize(client.GetStream()) as Packet;
+                        receiveQueue.Enqueue(packet);
+                    } catch (Exception e)
+                    {
+                        Console.Error(e.ToString());
+                    }
                 }
                 Thread.Sleep(30);
+            }
+            Console.Log("Receiver thread stopped");
+        }
+
+        public void HandlePackets()
+        {
+            while(receiveQueue.Count > 0)
+            {
+                Packet packet = receiveQueue.Dequeue();
+                try
+                {
+                    OnPacketReceived(packet);
+                } catch(Exception e)
+                {
+                    Console.Error(e.ToString());
+                }
             }
         }
 
         private void OnPacketReceived(Packet packet)
         {
             Console.Log($"Received {packet.GetType().ToString()}");
+            if(object.Equals(packet.GetType(), typeof(PlayerIDAttribution)))
+                OnPlayerIDAttribution((PlayerIDAttribution)packet);
+        }
+
+        private void OnPlayerIDAttribution(PlayerIDAttribution packet)
+        {
+            if(ID.HasValue)
+            {
+                Console.Error("Received unexpected IDAttribution");
+                return;
+            }
+            ID = packet.ID;
+            Console.Log($"ID set to {ID.Value}");
+            SendPacket(new IDAttibutionACK());
         }
     }
 }

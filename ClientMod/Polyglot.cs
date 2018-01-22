@@ -31,6 +31,7 @@ namespace Polyglot
         public override void Update()
         {
             Console.Update();
+            client.Update();
         }
 
         public override void OnGUI()

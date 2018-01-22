@@ -20,6 +20,9 @@ namespace PolyglotCommon
     }
 
     [Serializable]
+    public class IDAttibutionACK : Packet {}
+
+    [Serializable]
     public class NewPlayer : Packet
     {
         public int ID { get; set; }
@@ -39,6 +42,13 @@ namespace PolyglotCommon
             this.Pos = pos;
             this.Angles = angles;
         }
+    }
+
+    [Serializable]
+    public class PlayerList : Packet
+    {
+        public PlayerPosition[] List { get; set; }
+        public PlayerList(PlayerPosition[] list) { this.List = list; }
     }
 
     [Serializable]

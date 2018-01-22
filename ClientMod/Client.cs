@@ -24,6 +24,12 @@ namespace Polyglot
             savesPath = Application.persistentDataPath + "/saves/multiplayer";
         }
 
+        public void Update()
+        {
+            if(connection != null)
+                connection.HandlePackets();
+        }
+
         private void DeleteSave()
         {
             string saveName = savesPath + "/_";
@@ -33,6 +39,11 @@ namespace Polyglot
 
         private void Connect(string address, int port)
         {
+            if(connection != null && connection.Status == Status.Connected)
+            {
+                Console.Error("Already connected, disconnect first");
+                return;
+            }
             Console.Log($"Connecting to {address}:{port}");
             connection = new ClientConnection(address, port);
             if (!Directory.Exists(savesPath))
@@ -46,8 +57,15 @@ namespace Polyglot
         {
             if(connection != null)
                 connection.Disconnect();
-            UIManager.UnlockMouseAndDisableFirstPersonLooking();
-            SceneManager.LoadScene("main menu");
+            if (SceneManager.GetActiveScene().name == "gameplay")
+            {
+                UIManager.UnlockMouseAndDisableFirstPersonLooking();
+                SceneManager.LoadScene("main menu");
+            }
+            else
+            {
+                Console.Log("Not currently connected");
+            }
         }
 
         private void Command_connect(IEnumerable<string> args)
