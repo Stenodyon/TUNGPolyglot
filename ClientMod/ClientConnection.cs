@@ -4,10 +4,11 @@ using System.Net.Sockets;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
 using PolyglotCommon;
 using System.Runtime.Serialization.Formatters.Binary;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Polyglot
 {
@@ -33,6 +34,12 @@ namespace Polyglot
         private Queue<Packet> sendQueue;
         private Queue<Packet> receiveQueue;
 
+        private int lastSyncTime;
+        private static int SyncDelay = 1000/30;
+
+        private Transform player;
+        private bool inGameplay = false;
+
         public ClientConnection(string address, int port)
         {
             client = new TcpClient();
@@ -40,6 +47,7 @@ namespace Polyglot
             status = Status.Connected;
             sendQueue = new Queue<Packet>();
             receiveQueue = new Queue<Packet>();
+            players = new Dictionary<int, RemotePlayer>();
 
             sendThread = new Thread(this.SendThread);
             sendThread.IsBackground = true;
@@ -48,6 +56,24 @@ namespace Polyglot
             receiveThread = new Thread(this.ReceiveThread);
             receiveThread.IsBackground = true;
             receiveThread.Start();
+
+            lastSyncTime = 0;
+            SceneManager.activeSceneChanged += GameplayInit;
+        }
+
+        private void GameplayInit(Scene arg0, Scene arg1)
+        {
+            if (SceneManager.GetActiveScene().name != "gameplay")
+                return;
+            SceneManager.activeSceneChanged -= GameplayInit;
+            inGameplay = true;
+            GameObject playerObject = GameObject.Find("FirstPersonCharacter");
+            if(playerObject == null)
+            {
+                Console.Error("Could not find player object");
+                return;
+            }
+            player = playerObject.transform;
         }
 
         public void Disconnect()
@@ -74,7 +100,7 @@ namespace Polyglot
                     try
                     {
                         formatter.Serialize(client.GetStream(), packet);
-                        Console.Log($"Sent {packet.GetType().ToString()}");
+                        //Console.Log($"Sent {packet.GetType().ToString()}");
                     } catch(Exception e)
                     {
                         Console.Log(LogType.ERROR, e.ToString());
@@ -108,6 +134,16 @@ namespace Polyglot
             Console.Log("Receiver thread stopped");
         }
 
+        private void SyncPlayerPos()
+        {
+            int time = (int)(Time.time * 1000);
+            if (time - lastSyncTime > SyncDelay)
+            {
+                lastSyncTime = time;
+                SendPacket(new PlayerPosition(ID.Value, player.position, player.eulerAngles));
+            }
+        }
+
         public void HandlePackets()
         {
             while(receiveQueue.Count > 0)
@@ -121,13 +157,34 @@ namespace Polyglot
                     Console.Error(e.ToString());
                 }
             }
+            if (inGameplay)
+            {
+                SyncPlayerPos();
+            }
         }
 
         private void OnPacketReceived(Packet packet)
         {
-            Console.Log($"Received {packet.GetType().ToString()}");
-            if(object.Equals(packet.GetType(), typeof(PlayerIDAttribution)))
-                OnPlayerIDAttribution((PlayerIDAttribution)packet);
+            var packetSwitch = new Dictionary<Type, Action>
+            {
+                {typeof(PlayerIDAttribution),
+                    () => OnPlayerIDAttribution((PlayerIDAttribution)packet) },
+                {typeof(PlayerList),
+                    () => OnPlayerList((PlayerList)packet) },
+                {typeof(NewPlayer),
+                    () => OnNewPlayer((NewPlayer)packet) },
+                {typeof(PlayerPosition),
+                    () => OnPlayerPosition((PlayerPosition)packet) },
+            };
+            Action action;
+            if(!packetSwitch.TryGetValue(packet.GetType(), out action))
+                action = () => OnUnhandledPacket(packet);
+            action();
+        }
+
+        private void OnUnhandledPacket(Packet packet)
+        {
+            Console.Error($"Unhandled packet type {packet.GetType().ToString()}");
         }
 
         private void OnPlayerIDAttribution(PlayerIDAttribution packet)
@@ -140,6 +197,57 @@ namespace Polyglot
             ID = packet.ID;
             Console.Log($"ID set to {ID.Value}");
             SendPacket(new IDAttibutionACK());
+        }
+
+        private void OnNewPlayer(NewPlayer packet)
+        {
+            if (packet.ID == ID)
+                return;
+            if (!players.ContainsKey(packet.ID))
+                players.Add(packet.ID, new RemotePlayer(packet.ID));
+        }
+
+        private void OnPlayerList(PlayerList packet)
+        {
+            var currentPlayers = new HashSet<int>();
+            // Add new players and update existing
+            foreach(PlayerPosition player in packet.List)
+            {
+                if (player.PlayerID == ID)
+                    continue;
+                currentPlayers.Add(player.PlayerID);
+                RemotePlayer remotePlayer;
+                if(!players.ContainsKey(player.PlayerID))
+                {
+                    remotePlayer = new RemotePlayer(player.PlayerID);
+                    players.Add(player.PlayerID, remotePlayer);
+                }
+                else
+                {
+                    remotePlayer = players[player.PlayerID];
+                }
+                remotePlayer.Position = player.Pos;
+                remotePlayer.Angles = player.Angles;
+            }
+            // Remove absent players
+            List<int> toRemove = new List<int>();
+            foreach(RemotePlayer player in players.Values)
+            {
+                if (!currentPlayers.Contains(player.ID))
+                    toRemove.Add(player.ID);
+            }
+            foreach(int id in toRemove)
+                players.Remove(id);
+        }
+
+        private void OnPlayerPosition(PlayerPosition packet)
+        {
+            RemotePlayer player;
+            if(players.TryGetValue(packet.PlayerID, out player))
+            {
+                player.Position = packet.Pos;
+                player.Angles = packet.Angles;
+            }
         }
     }
 }

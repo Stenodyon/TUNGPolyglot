@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PolyglotCommon
 {
@@ -33,10 +32,10 @@ namespace PolyglotCommon
     public class PlayerPosition : Packet
     {
         public int PlayerID { get; set; }
-        public Vector3 Pos { get; set; }
-        public Vector3 Angles { get; set; }
+        public v3 Pos { get; set; }
+        public v3 Angles { get; set; }
 
-        public PlayerPosition(int id, Vector3 pos, Vector3 angles)
+        public PlayerPosition(int id, v3 pos, v3 angles)
         {
             this.PlayerID = id;
             this.Pos = pos;

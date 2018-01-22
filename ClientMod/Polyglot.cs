@@ -25,6 +25,8 @@ namespace Polyglot
             Console.RegisterCommand("find", Command_find);
             Console.RegisterCommand("spawnmesh", Command_spawnmesh);
             Console.RegisterCommand("lsshader", Command_lsshader);
+            Console.RegisterCommand("findplayer", Command_findplayer);
+            Console.RegisterCommand("findobj", Command_findobj);
             Console.Log($"Polyglot v{ModVersion.ToString()} initialized");
         }
 
@@ -61,6 +63,15 @@ namespace Polyglot
             }
         }
 
+        private void Command_findplayer(IEnumerable<string> args)
+        {
+            GameObject player = GameObject.Find("FirstPersonController");
+            if (player == null)
+                Console.Error("Could not find player");
+            else
+                Console.Log("Found player");
+        }
+
         public static void Command_find(IEnumerable<string> args)
         {
             if(args.Count() != 1)
@@ -75,7 +86,7 @@ namespace Polyglot
                 Console.Error($"{args.ElementAt(0)} is not a type");
                 return;
             }
-            if(!componentType.IsSubclassOf(typeof(UnityEngine.Component)))
+            if(!componentType.IsSubclassOf(typeof(Component)))
             {
                 Console.Error($"{args.ElementAt(0)} is not a Component");
                 return;
@@ -85,6 +96,21 @@ namespace Polyglot
             {
                 Console.Log($"\"{component.name}\" is at {component.transform.position}");
             }
+        }
+
+        private static void Command_findobj(IEnumerable<string> args)
+        {
+            if(args.Count() == 0)
+            {
+                Console.Error("Usage: findobj name");
+                return;
+            }
+            string name = string.Join(" ", args.ToArray());
+            GameObject found = GameObject.Find(name);
+            if (found != null)
+                Console.Log($"{found.name} found at {found.transform.position}");
+            else
+                Console.Error("Object not found");
         }
 
         public static void Command_lsshader(IEnumerable<string> args)

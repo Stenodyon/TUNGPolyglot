@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Polyglot
@@ -73,23 +72,13 @@ namespace Polyglot
 
         public Vector3 Position
         {
-            get { return Position; }
-            set
-            {
-                Position = value;
-                if (model != null)
-                    model.transform.position = value;
-            }
+            get { return model.transform.position; }
+            set { model.transform.position = value; }
         }
         public Quaternion Rotation
         {
-            get { return Rotation; }
-            set
-            {
-                Rotation = value;
-                if (model != null)
-                    model.transform.rotation = value;
-            }
+            get { return model.transform.rotation; }
+            set { model.transform.rotation = value; }
         }
 
         public Vector3 Angles

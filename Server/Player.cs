@@ -31,6 +31,9 @@ namespace PolyglotServer
         private Thread sendThread;
         private Thread receiveThread;
 
+        public v3 Position = new v3(0f, 0f, 0f);
+        public v3 Angles = new v3(0f, 0f, 0f);
+
         public Player(TcpClient client, Server server)
         {
             this.server = server;
@@ -97,9 +100,15 @@ namespace PolyglotServer
             {
                 if(client.Available > 0)
                 {
-                    BinaryFormatter formatter = new BinaryFormatter();
-                    Packet packet = formatter.Deserialize(client.GetStream()) as Packet;
-                    server.OnReceivedPacket(this, packet);
+                    try
+                    {
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        Packet packet = formatter.Deserialize(client.GetStream()) as Packet;
+                        server.OnReceivedPacket(this, packet);
+                    } catch(Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
                 }
                 Thread.Sleep(30);
             }
