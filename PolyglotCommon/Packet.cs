@@ -29,6 +29,13 @@ namespace PolyglotCommon
     }
 
     [Serializable]
+    public class PlayerDisconnected : Packet
+    {
+        public int ID { get; set; }
+        public PlayerDisconnected(int id) { this.ID = id; }
+    }
+
+    [Serializable]
     public class PlayerPosition : Packet
     {
         public int PlayerID { get; set; }

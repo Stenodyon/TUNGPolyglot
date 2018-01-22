@@ -175,6 +175,8 @@ namespace Polyglot
                     () => OnNewPlayer((NewPlayer)packet) },
                 {typeof(PlayerPosition),
                     () => OnPlayerPosition((PlayerPosition)packet) },
+                {typeof(PlayerDisconnected),
+                    () => OnPlayerDisconnected((PlayerDisconnected)packet) },
             };
             Action action;
             if(!packetSwitch.TryGetValue(packet.GetType(), out action))
@@ -247,6 +249,16 @@ namespace Polyglot
             {
                 player.Position = packet.Pos;
                 player.Angles = packet.Angles;
+            }
+        }
+
+        private void OnPlayerDisconnected(PlayerDisconnected packet)
+        {
+            RemotePlayer player;
+            if(players.TryGetValue(packet.ID, out player))
+            {
+                player.Destroy();
+                players.Remove(packet.ID);
             }
         }
     }

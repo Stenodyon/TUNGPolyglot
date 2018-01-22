@@ -79,6 +79,7 @@ namespace PolyglotServer
         public void OnPlayerDisconnect(Player player)
         {
             players.Remove(player.ID);
+            Broadcast(new PlayerDisconnected(player.ID));
         }
 
         public void OnReceivedPacket(Player player, Packet packet)
