@@ -12,15 +12,15 @@ namespace Polyglot
 {
     class Client
     {
-        private static int defaultPort = 4545;
-        private string savesPath;
+        private const int defaultPort = 4545;
+        private static string savesPath;
 
-        private ClientConnection connection;
+        private static ClientConnection connection;
 
         public Client()
         {
-            Console.RegisterCommand("connect", this.Command_connect);
-            Console.RegisterCommand("disconnect", this.Command_disconnect);
+            Console.RegisterCommand(new Command_connect());
+            Console.RegisterCommand(new Command_disconnect());
             savesPath = Application.persistentDataPath + "/saves/multiplayer";
         }
 
@@ -30,14 +30,14 @@ namespace Polyglot
                 connection.HandlePackets();
         }
 
-        private void DeleteSave()
+        private static void DeleteSave()
         {
             string saveName = savesPath + "/_";
             if (File.Exists(saveName))
                 File.Delete(saveName);
         }
 
-        private void Connect(string address, int port)
+        private static void Connect(string address, int port)
         {
             if(connection != null && connection.Status == Status.Connected)
             {
@@ -53,38 +53,50 @@ namespace Polyglot
             SceneManager.LoadScene("gameplay");
         }
 
-        private void Disconnect()
+        private static void Disconnect()
         {
             if(connection != null)
                 connection.Disconnect();
         }
 
-        private void Command_connect(IEnumerable<string> args)
+        private class Command_connect : Command
         {
-            if(args.Count() != 1)
+            public override string Name => "connect";
+            public override string Usage => $"{Name} host[:port]";
+
+            public override void Execute(IEnumerable<string> arguments)
             {
-                Console.Log(LogType.ERROR, "Usage: connect host[:port]");
-                return;
+                if (arguments.Count() != 1)
+                {
+                    Console.Log(LogType.ERROR, "Usage: connect host[:port]");
+                    return;
+                }
+                string[] parts = arguments.ElementAt(0).Split(':');
+                int port = 4545;
+                if (parts.Length > 1)
+                    port = Int32.Parse(parts[1]);
+                Connect(parts[0], port);
             }
-            string[] parts = args.ElementAt(0).Split(':');
-            int port = 4545;
-            if (parts.Length > 1)
-                port = Int32.Parse(parts[1]);
-            Connect(parts[0], port);
         }
 
-        private void Command_disconnect(IEnumerable<string> args)
+        private class Command_disconnect : Command
         {
-            Console.Log("Disconnecting...");
-            Disconnect();
-            if (SceneManager.GetActiveScene().name == "gameplay")
+            public override string Name => "disconnect";
+            public override string Usage => $"{Name}";
+
+            public override void Execute(IEnumerable<string> arguments)
             {
-                UIManager.UnlockMouseAndDisableFirstPersonLooking();
-                SceneManager.LoadScene("main menu");
-            }
-            else
-            {
-                Console.Log("Not currently connected");
+                Console.Log("Disconnecting...");
+                Disconnect();
+                if (SceneManager.GetActiveScene().name == "gameplay")
+                {
+                    UIManager.UnlockMouseAndDisableFirstPersonLooking();
+                    SceneManager.LoadScene("main menu");
+                }
+                else
+                {
+                    Console.Log("Not currently connected");
+                }
             }
         }
     }

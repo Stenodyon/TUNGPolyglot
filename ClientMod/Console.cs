@@ -6,8 +6,6 @@ using UnityEngine;
 
 namespace Polyglot
 {
-    public delegate void CommandExecutor(IEnumerable<string> arguments);
-
     /// <summary>
     /// Type of a log (should be self-explanatory
     /// </summary>
@@ -58,14 +56,14 @@ namespace Polyglot
         public abstract string Name { get; }
 
         /// <summary>
-        /// How to use the command (e.g. "{Name} argument [optional_argument]")
+        /// How to use the command (e.g. $"{Name} argument [optional_argument]")
         /// </summary>
         public abstract string Usage { get; }
 
         /// <summary>
         /// Short description of what the command does, preferably on 1 line
         /// </summary>
-        public virtual string Description { get; } = "";
+        public virtual string Description { get; } = null;
 
         /// <summary>
         /// Called when the command is invoked
@@ -74,7 +72,6 @@ namespace Polyglot
         public abstract void Execute(IEnumerable<string> arguments);
     }
 
-    //TODO: ICommand interface
     //TODO: Prevent player movement when console open
     //TODO: Add verbosity levels
 
@@ -97,7 +94,7 @@ namespace Polyglot
         private static int historySelector = -1;
         private static string currentCmd = "";
 
-        private static Dictionary<string, CommandExecutor> registry;
+        private static Dictionary<string, Command> registry;
 
         public static bool show = false;
 
@@ -108,16 +105,17 @@ namespace Polyglot
         {
             cmdLog = new DropOutStack<LogEntry>(maxHistory);
             history = new DropOutStack<string>(maxHistory);
-            registry = new Dictionary<string, CommandExecutor>();
+            registry = new Dictionary<string, Command>();
             style = new GUIStyle
             {
                 font = Font.CreateDynamicFontFromOSFont("Lucida Console", 16)
             };
 
-            RegisterCommand("help", Command_help);
-            RegisterCommand("lsmod", Command_lsmod);
-            RegisterCommand("lsfont", Command_lsfont);
+            RegisterCommand(new Command_help());
+            RegisterCommand(new Command_lsmod());
+            RegisterCommand(new Command_lsfont());
             Log("Console initialized");
+            Log("Type \"help\" to get a list of commands");
         }
 
         /// <summary>
@@ -233,11 +231,11 @@ namespace Polyglot
         /// <param name="callback">The callback which is called when the command
         /// is invoked. Its arguments are the arguments of the command</param>
         /// <returns>True of succeeded, false otherwise</returns>
-        public static bool RegisterCommand(string name, CommandExecutor callback)
+        public static bool RegisterCommand(Command command)
         {
-            if (registry.ContainsKey(name))
+            if (registry.ContainsKey(command.Name))
                 return false;
-            registry.Add(name, callback);
+            registry.Add(command.Name, command);
             return true;
         }
 
@@ -256,26 +254,31 @@ namespace Polyglot
             return false;
         }
 
+        /// <summary>
+        /// Called when the user presses enter
+        /// </summary>
+        /// <param name="cmd">The full command line</param>
         private static void ExecuteCommand(string cmd)
         {
-            string[] words = cmd.Split(' ');
-            if (words.Length == 0)
+            if (cmd.Length == 0)
                 return;
+            string[] words = cmd.Split(' ');
             string verb = words[0];
-            if (registry.ContainsKey(verb))
+            Command command;
+            if(registry.TryGetValue(verb, out command))
             {
-                CommandExecutor executor = registry[verb];
                 try
                 {
-                    executor(words.Skip(1));
-                } catch(Exception e)
+                    command.Execute(words.Skip(1));
+                }
+                catch (Exception e)
                 {
                     Log(LogType.ERROR, e.ToString());
                 }
             }
             else
             {
-                Log(LogType.ERROR, $"Unrecognized command {verb}");
+                Log(LogType.ERROR, $"Unrecognized command: {verb}");
             }
         }
 
@@ -324,34 +327,68 @@ namespace Polyglot
             GUI.Label(rect, text, newStyle);
         }
 
-        static void Command_lsfont(IEnumerable<string> args)
+        private class Command_help : Command
         {
-            if (args.Count() > 1)
+            public override string Name => "help";
+            public override string Usage => $"{Name} [command]";
+            public override string Description => "Lists command and shows their usage (help command)";
+
+            public override void Execute(IEnumerable<string> arguments)
             {
-                string extras = String.Join(" ", args.Skip(1).ToArray());
-                Log(LogType.ERROR, $"Invalid arguments: \"{extras}\"");
-                return;
-            }
-            string contained = "";
-            if (args.Count() == 1)
-                contained = args.ElementAt(0);
-            foreach (string name in Font.GetOSInstalledFontNames())
-            {
-                if (name.ToLower().Contains(contained))
-                    Log(name);
+                if(arguments.Count() == 0)
+                {
+                    foreach(Command command in registry.Values)
+                    {
+                        string log = command.Name;
+                        if (command.Description != null)
+                            log += ": " + command.Description;
+                        Log(log);
+                    }
+                }
+                else if(arguments.Count() == 1)
+                {
+                    string name = arguments.ElementAt(0);
+                    Command command;
+                    if(registry.TryGetValue(name, out command))
+                    {
+                        Log(command.Description);
+                        Log(command.Usage);
+                    }
+                    else
+                    {
+                        Error($"No such command \"{name}\"");
+                    }
+                }
+                else
+                {
+                    Error(Usage);
+                    return;
+                }
             }
         }
 
-        static void Command_lsmod(IEnumerable<string> args)
+        private class Command_lsmod : Command
         {
-            Log(LogType.ERROR, "Not implemented");
+            public override string Name => "lsmod";
+            public override string Usage => $"{Name}";
+            public override string Description => "Lists loaded mods (not implemented)";
+
+            public override void Execute(IEnumerable<string> arguments)
+            {
+                throw new NotImplementedException();
+            }
         }
 
-        static void Command_help(IEnumerable<string> args)
+        private class Command_lsfont : Command
         {
-            Log("Here is a list of available commands:");
-            foreach(string name in registry.Keys)
-                Log(name);
+            public override string Name => "lsfont";
+            public override string Usage => $"{Name} filter_pattern";
+            public override string Description => "Lists fonts and filter them with filter_pattern";
+
+            public override void Execute(IEnumerable<string> arguments)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
