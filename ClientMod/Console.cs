@@ -80,7 +80,9 @@ namespace Polyglot
     /// <summary>
     /// In game console
     /// <para>This static class allows for logging and registering commands
-    /// which will be executed by callbacks</para>
+    /// which will be executed by callbacks. Contains a dictionary of
+    /// global variables that can be read and written to from the console
+    /// using the "set" command</para>
     /// </summary>
     public class Console
     {
