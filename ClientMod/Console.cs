@@ -332,6 +332,22 @@ namespace Polyglot
                         editLocation--;
                     }
                 }
+                else if (c == 0x7F) // Ctrl + Backspace (erase word)
+                {
+                    if (currentCmd.Length != 0)
+                    {
+                        int index = editLocation;
+                        while(index > 0 && Char.IsLetterOrDigit(currentCmd.ElementAt(index - 1)))
+                            index--;
+                        if (index == editLocation && editLocation > 0)
+                            index--;
+                        int length = editLocation - index;
+                        string firstHalf = currentCmd.Substring(0, index);
+                        string secondHalf = currentCmd.Substring(editLocation, currentCmd.Length - editLocation);
+                        currentCmd = firstHalf + secondHalf;
+                        editLocation -= length;
+                    }
+                }
                 else if ((c == '\n') || (c == '\r')) // enter/return
                 {
                     Log(LogType.USERINPUT, "> " + currentCmd);
