@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using PiTung_Bootstrap;
+using PiTung_Bootstrap.Console;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -55,30 +56,31 @@ namespace Polyglot
             public override string Name => "find";
             public override string Usage => $"{Name} component_name";
 
-            public override void Execute(IEnumerable<string> arguments)
+            public override bool Execute(IEnumerable<string> arguments)
             {
                 if (arguments.Count() != 1)
                 {
                     IGConsole.Error("Usage: find component_name");
-                    return;
+                    return false;
                 }
                 Assembly asm = typeof(UnityEngine.Object).Assembly;
                 Type componentType = asm.GetType($"UnityEngine.{arguments.ElementAt(0)}");
                 if (componentType == null)
                 {
                     IGConsole.Error($"{arguments.ElementAt(0)} is not a type");
-                    return;
+                    return false;
                 }
                 if (!componentType.IsSubclassOf(typeof(Component)))
                 {
                     IGConsole.Error($"{arguments.ElementAt(0)} is not a Component");
-                    return;
+                    return false;
                 }
                 Component[] matches = (Component[])GameObject.FindObjectsOfType(componentType);
                 foreach (Component component in matches)
                 {
                     IGConsole.Log($"\"{component.name}\" is at {component.transform.position}");
                 }
+                return true;
             }
         }
 
@@ -87,12 +89,12 @@ namespace Polyglot
             public override string Name => "findobj";
             public override string Usage => $"{Name} name";
 
-            public override void Execute(IEnumerable<string> arguments)
+            public override bool Execute(IEnumerable<string> arguments)
             {
                 if (arguments.Count() == 0)
                 {
                     IGConsole.Error("Usage: findobj name");
-                    return;
+                    return false;
                 }
                 string name = string.Join(" ", arguments.ToArray());
                 GameObject found = GameObject.Find(name);
@@ -100,6 +102,7 @@ namespace Polyglot
                     IGConsole.Log($"{found.name} found at {found.transform.position}");
                 else
                     IGConsole.Error("Object not found");
+                return true;
             }
         }
 

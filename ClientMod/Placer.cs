@@ -5,7 +5,7 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using PiTung_Bootstrap;
+using PiTung_Bootstrap.Console;
 
 namespace Polyglot
 {
@@ -100,14 +100,15 @@ namespace Polyglot
                 this.placer = placer;
             }
 
-            public override void Execute(IEnumerable<string> arguments)
+            public override bool Execute(IEnumerable<string> arguments)
             {
                 if(SceneManager.GetActiveScene().name != "gameplay")
                 {
                     IGConsole.Error("Only usable on gameplay");
-                    return;
+                    return false;
                 }
                 placer.Board(4, 4, new Vector3(0f, 1f, 0f), Quaternion.identity);
+                return true;
             }
         }
     }

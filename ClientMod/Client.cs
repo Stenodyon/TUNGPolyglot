@@ -6,7 +6,7 @@ using System.Text;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Net;
-using PiTung_Bootstrap;
+using PiTung_Bootstrap.Console;
 
 namespace Polyglot
 {
@@ -64,18 +64,19 @@ namespace Polyglot
             public override string Name => "connect";
             public override string Usage => $"{Name} host[:port]";
 
-            public override void Execute(IEnumerable<string> arguments)
+            public override bool Execute(IEnumerable<string> arguments)
             {
                 if (arguments.Count() != 1)
                 {
                     IGConsole.Error("Usage: connect host[:port]");
-                    return;
+                    return false;
                 }
                 string[] parts = arguments.ElementAt(0).Split(':');
                 int port = 4545;
                 if (parts.Length > 1)
                     port = Int32.Parse(parts[1]);
                 Connect(parts[0], port);
+                return true;
             }
         }
 
@@ -84,7 +85,7 @@ namespace Polyglot
             public override string Name => "disconnect";
             public override string Usage => $"{Name}";
 
-            public override void Execute(IEnumerable<string> arguments)
+            public override bool Execute(IEnumerable<string> arguments)
             {
                 IGConsole.Log("Disconnecting...");
                 Disconnect();
@@ -96,7 +97,9 @@ namespace Polyglot
                 else
                 {
                     IGConsole.Log("Not currently connected");
+                    return false;
                 }
+                return true;
             }
         }
     }
