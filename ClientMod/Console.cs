@@ -47,7 +47,36 @@ namespace Polyglot
         }
     }
 
-    //TODO: Moving cursor within command for edition
+    /// <summary>
+    /// Represents a command that can be invoked from the console
+    /// </summary>
+    public abstract class Command
+    {
+        /// <summary>
+        /// Used to invoke the command (e.g. "help")
+        /// </summary>
+        public abstract string Name { get; }
+
+        /// <summary>
+        /// How to use the command (e.g. "{Name} argument [optional_argument]")
+        /// </summary>
+        public abstract string Usage { get; }
+
+        /// <summary>
+        /// Short description of what the command does, preferably on 1 line
+        /// </summary>
+        public virtual string Description { get; } = "";
+
+        /// <summary>
+        /// Called when the command is invoked
+        /// </summary>
+        /// <param name="arguments">The arguments given to the command</param>
+        public abstract void Execute(IEnumerable<string> arguments);
+    }
+
+    //TODO: ICommand interface
+    //TODO: Prevent player movement when console open
+    //TODO: Add verbosity levels
 
     /// <summary>
     /// In game console
@@ -56,12 +85,15 @@ namespace Polyglot
     /// </summary>
     public class Console
     {
-        private static int maxHistory = 100;
-        private static int lineHeight = 16;
-        private static GUIStyle style;
+        private const int maxHistory = 100;
+        private const int lineHeight = 16;
+        private const string prompt = "> ";
+        private const string cursor = "_";
 
+        private static GUIStyle style;
         private static DropOutStack<LogEntry> cmdLog;
         private static DropOutStack<String> history;
+        private static int editLocation = 0;
         private static int historySelector = -1;
         private static string currentCmd = "";
 
@@ -93,25 +125,36 @@ namespace Polyglot
         /// </summary>
         public static void Update()
         {
+            // Toggle console with TAB
             if (Input.GetKeyDown(KeyCode.Tab))
                 show = !show;
 
-            if(Input.GetKeyDown(KeyCode.UpArrow) && historySelector < history.Count - 1)
-            {
-                historySelector += 1;
-                currentCmd = history.Get(historySelector);
-            }
-            if(Input.GetKeyDown(KeyCode.DownArrow) && historySelector > -1)
-            {
-                historySelector -= 1;
-                if (historySelector == -1)
-                    currentCmd = "";
-                else
-                    currentCmd = history.Get(historySelector);
-            }
-
             if (show)
-                ReadInput();
+            {
+                // Handling history
+                if (Input.GetKeyDown(KeyCode.UpArrow) && historySelector < history.Count - 1)
+                {
+                    historySelector += 1;
+                    currentCmd = history.Get(historySelector);
+                    editLocation = currentCmd.Length;
+                }
+                if (Input.GetKeyDown(KeyCode.DownArrow) && historySelector > -1)
+                {
+                    historySelector -= 1;
+                    if (historySelector == -1)
+                        currentCmd = "";
+                    else
+                        currentCmd = history.Get(historySelector);
+                    editLocation = currentCmd.Length;
+                }
+                // Handle editing
+                if (Input.GetKeyDown(KeyCode.LeftArrow) && editLocation > 0)
+                    editLocation--;
+                if (Input.GetKeyDown(KeyCode.RightArrow) && editLocation < currentCmd.Length)
+                    editLocation++;
+
+                ReadInput(); // Read text input
+            }
         }
 
         /// <summary>
@@ -121,11 +164,13 @@ namespace Polyglot
         {
             if (!show)
                 return;
+
             Color background = Color.black;
             background.a = 0.5f;
             int height = Screen.height / 2;
             int width = Screen.width;
             int linecount = height / lineHeight;
+            // Background rectangle
             ModUtilities.Graphics.DrawRect(new Rect(0, 0, width, linecount * lineHeight + 5), background);
             for(int line = 0; line < Math.Min(linecount - 1, cmdLog.Count); line++)
             {
@@ -134,7 +179,18 @@ namespace Polyglot
                 DrawText(entry.Message, new Vector2(5, y), entry.GetColor());
             }
             int consoleY = (linecount - 1) * lineHeight;
-            DrawText("> " + currentCmd + "_", new Vector2(5, consoleY), Color.green);
+            try
+            {
+                DrawText(prompt + currentCmd, new Vector2(5, consoleY), Color.green);
+                float x = Width(prompt) + Width(currentCmd.Substring(0, editLocation));
+                DrawText(cursor, new Vector2(5 + x, consoleY), Color.green);
+            } catch(Exception e)
+            {
+                Error($"currentCmd: \"{currentCmd}\"\neditLocation: {editLocation}");
+                Error(e.ToString());
+                currentCmd = "";
+                editLocation = 0;
+            }
         }
 
         /// <summary>
@@ -231,7 +287,10 @@ namespace Polyglot
                 {
                     if (currentCmd.Length != 0)
                     {
-                        currentCmd = currentCmd.Substring(0, currentCmd.Length - 1);
+                        string firstHalf = currentCmd.Substring(0, editLocation - 1);
+                        string secondHalf = currentCmd.Substring(editLocation, currentCmd.Length - editLocation);
+                        currentCmd = firstHalf + secondHalf;
+                        editLocation--;
                     }
                 }
                 else if ((c == '\n') || (c == '\r')) // enter/return
@@ -240,12 +299,19 @@ namespace Polyglot
                     history.Push(currentCmd);
                     ExecuteCommand(currentCmd);
                     currentCmd = "";
+                    editLocation = 0;
                 }
                 else
                 {
-                    currentCmd += c;
+                    currentCmd = currentCmd.Insert(editLocation, c.ToString());
+                    editLocation++;
                 }
             }
+        }
+
+        private static float Width(string text)
+        {
+            return style.CalcSize(new GUIContent(text)).x;
         }
 
         static void DrawText(string text, Vector2 pos, Color color)
