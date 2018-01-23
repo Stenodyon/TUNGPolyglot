@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Polyglot
 {
@@ -72,8 +73,9 @@ namespace Polyglot
         public abstract void Execute(IEnumerable<string> arguments);
     }
 
-    //TODO: Prevent player movement when console open
+    //FIXME: Changing scene to gameplay locks mouse
     //TODO: Add verbosity levels
+    //TODO: Parse string literals as one argument
 
     /// <summary>
     /// In game console
@@ -95,6 +97,7 @@ namespace Polyglot
         private static string currentCmd = "";
 
         private static Dictionary<string, Command> registry;
+        private static Dictionary<string, string> varRegistry;
 
         public static bool show = false;
 
@@ -106,6 +109,7 @@ namespace Polyglot
             cmdLog = new DropOutStack<LogEntry>(maxHistory);
             history = new DropOutStack<string>(maxHistory);
             registry = new Dictionary<string, Command>();
+            varRegistry = new Dictionary<string, string>();
             style = new GUIStyle
             {
                 font = Font.CreateDynamicFontFromOSFont("Lucida Console", 16)
@@ -114,6 +118,7 @@ namespace Polyglot
             RegisterCommand(new Command_help());
             RegisterCommand(new Command_lsmod());
             RegisterCommand(new Command_lsfont());
+            RegisterCommand(new Command_set());
             Log("Console initialized");
             Log("Type \"help\" to get a list of commands");
         }
@@ -125,7 +130,16 @@ namespace Polyglot
         {
             // Toggle console with TAB
             if (Input.GetKeyDown(KeyCode.Tab))
+            {
                 show = !show;
+                if(SceneManager.GetActiveScene().name == "gameplay")
+                {
+                    if (show)
+                        UIManager.UnlockMouseAndDisableFirstPersonLooking();
+                    else if(!UIManager.SomeOtherMenuIsOpen)
+                        UIManager.LockMouseAndEnableFirstPersonLooking();
+                }
+            }
 
             if (show)
             {
@@ -212,6 +226,29 @@ namespace Polyglot
         public static void Log(string msg)
         {
             Log(LogType.INFO, msg);
+        }
+
+        /// <summary>
+        /// Saves the value of a global variable
+        /// </summary>
+        /// <param name="variable">The variable to set</param>
+        /// <param name="value">The value to give</param>
+        public static void SetVariable(string variable, string value)
+        {
+            varRegistry.Add(variable, value);
+        }
+
+        /// <summary>
+        /// Obtains the value of a global variable
+        /// </summary>
+        /// <param name="variable">The variable to get</param>
+        /// <returns>The value, or null if variable is not set</returns>
+        public static string GetVariable(string variable)
+        {
+            string value;
+            if(varRegistry.TryGetValue(variable, out value))
+                return value;
+            return null;
         }
 
         /// <summary>
@@ -317,7 +354,7 @@ namespace Polyglot
             return style.CalcSize(new GUIContent(text)).x;
         }
 
-        static void DrawText(string text, Vector2 pos, Color color)
+        private static void DrawText(string text, Vector2 pos, Color color)
         {
             GUIStyle newStyle = new GUIStyle(style);
             newStyle.normal.textColor = color;
@@ -388,6 +425,36 @@ namespace Polyglot
             public override void Execute(IEnumerable<string> arguments)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class Command_set : Command
+        {
+            public override string Name => "set";
+            public override string Usage => $"{Name} variable [value]";
+            public override string Description => "Gets and sets global variables";
+
+            public override void Execute(IEnumerable<string> arguments)
+            {
+                if(arguments.Count() == 1)
+                {
+                    string variable = arguments.ElementAt(0);
+                    string value = Console.GetVariable(variable);
+                    if (value != null)
+                        Console.Log(value);
+                    else
+                        Console.Error($"Variable {variable} no set");
+                }
+                else if(arguments.Count() == 2)
+                {
+                    string variable = arguments.ElementAt(0);
+                    string value = arguments.ElementAt(1);
+                    Console.SetVariable(variable, value);
+                }
+                else
+                {
+                    Console.Error(Usage);
+                }
             }
         }
     }

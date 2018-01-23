@@ -60,11 +60,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BoardManager.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientConnection.cs" />
     <Compile Include="Console.cs" />
     <Compile Include="DropOutStack.cs" />
     <Compile Include="BuildListener.cs" />
+    <Compile Include="NetBoard.cs" />
+    <Compile Include="NetComponent.cs" />
     <Compile Include="Placer.cs" />
     <Compile Include="Polyglot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
