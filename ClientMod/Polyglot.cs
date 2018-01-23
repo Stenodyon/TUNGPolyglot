@@ -10,9 +10,11 @@ namespace Polyglot
 {
     public class Polyglot : Mod
     {
-        public override string ModName => "Polyglot";
-        public override string ModAuthor => "Stenodyon";
+
+        public override string Name => "Polyglot";
+        public override string Author => "Stenodyon";
         public override Version ModVersion => new Version(0, 1, 0);
+        public override Version FrameworkVersion => PiTung.FrameworkVersion;
 
         private Client client;
         public Placer placer { get; private set; }
