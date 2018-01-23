@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>..\lib\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp.original">
       <HintPath>..\lib\Assembly-CSharp.original.dll</HintPath>
     </Reference>
@@ -49,6 +52,9 @@
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>..\lib\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>..\lib\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>..\lib\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -58,6 +64,7 @@
     <Compile Include="ClientConnection.cs" />
     <Compile Include="Console.cs" />
     <Compile Include="DropOutStack.cs" />
+    <Compile Include="BuildListener.cs" />
     <Compile Include="Placer.cs" />
     <Compile Include="Polyglot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

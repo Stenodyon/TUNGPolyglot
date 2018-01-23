@@ -18,7 +18,7 @@ namespace Polyglot
         Connected
     }
 
-    class ClientConnection
+    class ClientConnection : BuildListener
     {
         private TcpClient client;
         private Status status = Status.Disconnected;
@@ -269,6 +269,11 @@ namespace Polyglot
                 player.Destroy();
                 players.Remove(packet.ID);
             }
+        }
+
+        protected override void OnPlaceBoard(GameObject board)
+        {
+            Console.Log($"Board placed at {board.transform.position}");
         }
     }
 }
