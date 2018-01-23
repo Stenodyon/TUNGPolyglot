@@ -15,11 +15,13 @@ namespace Polyglot
         public override Version ModVersion => new Version(0, 1, 0);
 
         private Client client;
+        public Placer placer { get; private set; }
 
         public override void AfterPatch()
         {
             Console.Init();
             client = new Client();
+            placer = new Placer();
             Console.RegisterCommand(new Command_find());
             Console.RegisterCommand(new Command_findobj());
             Console.Log($"Polyglot v{ModVersion.ToString()} initialized");
