@@ -339,7 +339,7 @@ namespace Polyglot
                         int index = editLocation;
                         while(index > 0 && Char.IsLetterOrDigit(currentCmd.ElementAt(index - 1)))
                             index--;
-                        if (index == editLocation && editLocation > 0)
+                        if (index == editLocation && editLocation > 0) // Delete at least 1 character
                             index--;
                         int length = editLocation - index;
                         string firstHalf = currentCmd.Substring(0, index);
