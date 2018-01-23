@@ -117,7 +117,6 @@ namespace Polyglot
 
             RegisterCommand(new Command_help());
             RegisterCommand(new Command_lsmod());
-            RegisterCommand(new Command_lsfont());
             RegisterCommand(new Command_set());
             Log("Console initialized");
             Log("Type \"help\" to get a list of commands");
@@ -409,18 +408,6 @@ namespace Polyglot
             public override string Name => "lsmod";
             public override string Usage => $"{Name}";
             public override string Description => "Lists loaded mods (not implemented)";
-
-            public override void Execute(IEnumerable<string> arguments)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class Command_lsfont : Command
-        {
-            public override string Name => "lsfont";
-            public override string Usage => $"{Name} filter_pattern";
-            public override string Description => "Lists fonts and filter them with filter_pattern";
 
             public override void Execute(IEnumerable<string> arguments)
             {
