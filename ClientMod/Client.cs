@@ -19,8 +19,8 @@ namespace Polyglot
 
         public Client()
         {
-            Console.RegisterCommand(new Command_connect());
-            Console.RegisterCommand(new Command_disconnect());
+            IGConsole.RegisterCommand(new Command_connect());
+            IGConsole.RegisterCommand(new Command_disconnect());
             savesPath = Application.persistentDataPath + "/saves/multiplayer";
         }
 
@@ -41,10 +41,10 @@ namespace Polyglot
         {
             if(connection != null && connection.Status == Status.Connected)
             {
-                Console.Error("Already connected, disconnect first");
+                IGConsole.Error("Already connected, disconnect first");
                 return;
             }
-            Console.Log($"Connecting to {address}:{port}");
+            IGConsole.Log($"Connecting to {address}:{port}");
             connection = new ClientConnection(address, port);
             if (!Directory.Exists(savesPath))
                 Directory.CreateDirectory(savesPath);
@@ -68,7 +68,7 @@ namespace Polyglot
             {
                 if (arguments.Count() != 1)
                 {
-                    Console.Log(LogType.ERROR, "Usage: connect host[:port]");
+                    IGConsole.Error("Usage: connect host[:port]");
                     return;
                 }
                 string[] parts = arguments.ElementAt(0).Split(':');
@@ -86,7 +86,7 @@ namespace Polyglot
 
             public override void Execute(IEnumerable<string> arguments)
             {
-                Console.Log("Disconnecting...");
+                IGConsole.Log("Disconnecting...");
                 Disconnect();
                 if (SceneManager.GetActiveScene().name == "gameplay")
                 {
@@ -95,7 +95,7 @@ namespace Polyglot
                 }
                 else
                 {
-                    Console.Log("Not currently connected");
+                    IGConsole.Log("Not currently connected");
                 }
             }
         }

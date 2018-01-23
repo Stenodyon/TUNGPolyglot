@@ -23,7 +23,7 @@ namespace Polyglot
             private static void Prefix(BoardPlacer __instance)
             {
                 if (BoardPlacer.BoardBeingPlaced == null)
-                    Console.Log("null board?");
+                    IGConsole.Log("null board?");
                 foreach(BuildListener listener in instances)
                     listener.OnPlaceBoard(BoardPlacer.BoardBeingPlaced);
             }

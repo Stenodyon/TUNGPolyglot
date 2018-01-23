@@ -9,6 +9,7 @@ using PolyglotCommon;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using PiTung_Bootstrap;
 
 namespace Polyglot
 {
@@ -70,7 +71,7 @@ namespace Polyglot
             GameObject playerObject = GameObject.Find("FirstPersonCharacter");
             if(playerObject == null)
             {
-                Console.Error("Could not find player object");
+                IGConsole.Error("Could not find player object");
                 return;
             }
             player = playerObject.transform;
@@ -99,7 +100,7 @@ namespace Polyglot
 
         private void SendThread()
         {
-            Console.Log("Starting sender thread");
+            IGConsole.Log("Starting sender thread");
             while(status != Status.Disconnected)
             {
                 if(sendQueue.Count > 0)
@@ -112,18 +113,18 @@ namespace Polyglot
                         //Console.Log($"Sent {packet.GetType().ToString()}");
                     } catch(Exception e)
                     {
-                        Console.Log(LogType.ERROR, e.ToString());
+                        IGConsole.Error(e.ToString());
                         Disconnect();
                     }
                 }
                 Thread.Sleep(30);
             }
-            Console.Log("Sender thread stopped");
+            IGConsole.Log("Sender thread stopped");
         }
 
         private void ReceiveThread()
         {
-            Console.Log("Starting receiver thread");
+            IGConsole.Log("Starting receiver thread");
             while(status != Status.Disconnected)
             {
                 if(client.Available > 0)
@@ -135,12 +136,12 @@ namespace Polyglot
                         receiveQueue.Enqueue(packet);
                     } catch (Exception e)
                     {
-                        Console.Error(e.ToString());
+                        IGConsole.Error(e.ToString());
                     }
                 }
                 Thread.Sleep(30);
             }
-            Console.Log("Receiver thread stopped");
+            IGConsole.Log("Receiver thread stopped");
         }
 
         private void SyncPlayerPos()
@@ -163,7 +164,7 @@ namespace Polyglot
                     OnPacketReceived(packet);
                 } catch(Exception e)
                 {
-                    Console.Error(e.ToString());
+                    IGConsole.Error(e.ToString());
                 }
             }
             if (inGameplay)
@@ -195,18 +196,18 @@ namespace Polyglot
 
         private void OnUnhandledPacket(Packet packet)
         {
-            Console.Error($"Unhandled packet type {packet.GetType().ToString()}");
+            IGConsole.Error($"Unhandled packet type {packet.GetType().ToString()}");
         }
 
         private void OnPlayerIDAttribution(PlayerIDAttribution packet)
         {
             if(ID.HasValue)
             {
-                Console.Error("Received unexpected IDAttribution");
+                IGConsole.Error("Received unexpected IDAttribution");
                 return;
             }
             ID = packet.ID;
-            Console.Log($"ID set to {ID.Value}");
+            IGConsole.Log($"ID set to {ID.Value}");
             SendPacket(new IDAttibutionACK());
         }
 
@@ -273,7 +274,7 @@ namespace Polyglot
 
         protected override void OnPlaceBoard(GameObject board)
         {
-            Console.Log($"Board placed at {board.transform.position}");
+            IGConsole.Log($"Board placed at {board.transform.position}");
         }
     }
 }

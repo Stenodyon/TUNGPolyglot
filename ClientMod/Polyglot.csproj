@@ -63,8 +63,6 @@
     <Compile Include="BoardManager.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientConnection.cs" />
-    <Compile Include="Console.cs" />
-    <Compile Include="DropOutStack.cs" />
     <Compile Include="BuildListener.cs" />
     <Compile Include="NetBoard.cs" />
     <Compile Include="NetComponent.cs" />

@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using PiTung_Bootstrap;
 
 namespace Polyglot
 {
@@ -15,7 +16,7 @@ namespace Polyglot
 
         public Placer()
         {
-            Console.RegisterCommand(new Command_tryplace(this));
+            IGConsole.RegisterCommand(new Command_tryplace(this));
             if (SceneManager.GetActiveScene().name == "gameplay")
                 Init();
             else
@@ -37,18 +38,18 @@ namespace Polyglot
             boardPlacer = GameObject.FindObjectOfType<BoardPlacer>();
             if (!boardPlacer)
             {
-                Console.Error("Could not find BoardPlacer");
+                IGConsole.Error("Could not find BoardPlacer");
                 return;
             }
-            Console.Log("Board placer found");
+            IGConsole.Log("Board placer found");
             _SetChildCircuitsMegaMeshStatus = boardPlacer.GetType()
                 .GetMethod("SetChildCircuitsMegaMeshStatus", BindingFlags.NonPublic | BindingFlags.Instance);
             if (_SetChildCircuitsMegaMeshStatus == null)
             {
-                Console.Error("Could not get SCCMMS method");
+                IGConsole.Error("Could not get SCCMMS method");
                 return;
             }
-            Console.Log("Got SCCMMS method");
+            IGConsole.Log("Got SCCMMS method");
         }
 
         public GameObject Board(int width, int height,
@@ -103,7 +104,7 @@ namespace Polyglot
             {
                 if(SceneManager.GetActiveScene().name != "gameplay")
                 {
-                    Console.Error("Only usable on gameplay");
+                    IGConsole.Error("Only usable on gameplay");
                     return;
                 }
                 placer.Board(4, 4, new Vector3(0f, 1f, 0f), Quaternion.identity);
