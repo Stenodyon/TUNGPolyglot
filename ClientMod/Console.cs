@@ -86,21 +86,70 @@ namespace Polyglot
     /// </summary>
     public class Console
     {
+        /// <summary>
+        /// Max number of log entries kept in memory
+        /// </summary>
         private const int maxHistory = 100;
+
+        /// <summary>
+        /// Height of lines in pixels
+        /// </summary>
         private const int lineHeight = 16;
+
+        /// <summary>
+        /// Input prompt, displayed in front of the user input
+        /// </summary>
         private const string prompt = "> ";
+
+        /// <summary>
+        /// Cursor displayed at edit location
+        /// </summary>
         private const string cursor = "_";
 
+
+        /// <summary>
+        /// Console text style (font mostly)
+        /// </summary>
         private static GUIStyle style;
+
+        /// <summary>
+        /// Log of user input and command output
+        /// </summary>
         private static DropOutStack<LogEntry> cmdLog;
+
+        /// <summary>
+        /// Command history for retreival with up and down arrows
+        /// </summary>
         private static DropOutStack<String> history;
+
+        /// <summary>
+        /// Where the cursor is within the line
+        /// </summary>
         private static int editLocation = 0;
+
+        /// <summary>
+        /// Where we are in the command history
+        /// </summary>
         private static int historySelector = -1;
+
+        /// <summary>
+        /// What is currently in the input line
+        /// </summary>
         private static string currentCmd = "";
 
+        /// <summary>
+        /// Command registry (name -> Command)
+        /// </summary>
         private static Dictionary<string, Command> registry;
+
+        /// <summary>
+        /// Variable registry (name -> value)
+        /// </summary>
         private static Dictionary<string, string> varRegistry;
 
+        /// <summary>
+        /// Is the console currently shown?
+        /// </summary>
         public static bool show = false;
 
         /// <summary>
