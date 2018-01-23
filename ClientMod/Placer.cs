@@ -10,20 +10,30 @@ namespace Polyglot
 {
     public class Placer
     {
-        private BoardPlacer boardPlacer = null;
-        private MethodInfo _SetChildCircuitsMegaMeshStatus = null;
+        private static BoardPlacer boardPlacer = null;
+        private static MethodInfo _SetChildCircuitsMegaMeshStatus = null;
 
         public Placer()
         {
             Console.RegisterCommand(new Command_tryplace(this));
-            SceneManager.activeSceneChanged += GameplayInit;
+            if (SceneManager.GetActiveScene().name == "gameplay")
+                Init();
+            else
+                SceneManager.activeSceneChanged += DelayedInit;
         }
 
-        private void GameplayInit(Scene arg0, Scene arg1)
+        private void DelayedInit(Scene arg0, Scene arg1)
         {
             if (arg1.name != "gameplay")
                 return;
-            SceneManager.activeSceneChanged -= GameplayInit;
+            SceneManager.activeSceneChanged -= DelayedInit;
+            Init();
+        }
+
+        private void Init()
+        {
+            if (boardPlacer != null)
+                return;
             boardPlacer = GameObject.FindObjectOfType<BoardPlacer>();
             if (!boardPlacer)
             {
