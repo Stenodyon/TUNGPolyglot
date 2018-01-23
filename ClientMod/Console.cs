@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 namespace Polyglot
 {
     /// <summary>
-    /// Type of a log (should be self-explanatory
+    /// Type of a log (should be self-explanatory)
     /// </summary>
     public enum LogType
     {
