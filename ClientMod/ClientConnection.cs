@@ -13,13 +13,13 @@ using PiTung_Bootstrap.Console;
 
 namespace Polyglot
 {
-    internal enum Status
+    public enum Status
     {
         Disconnected,
         Connected
     }
 
-    class ClientConnection : BuildListener
+    public class ClientConnection
     {
         private TcpClient client;
         private Status status = Status.Disconnected;
@@ -40,6 +40,8 @@ namespace Polyglot
 
         private Transform player;
         private bool inGameplay = false;
+
+        private BoardManager boardManager;
 
         public ClientConnection(string address, int port)
         {
@@ -75,6 +77,7 @@ namespace Polyglot
                 return;
             }
             player = playerObject.transform;
+            boardManager = new BoardManager(this);
             SceneManager.activeSceneChanged += DisconnectOnLeave;
         }
 
@@ -187,6 +190,10 @@ namespace Polyglot
                     () => OnPlayerPosition((PlayerPosition)packet) },
                 {typeof(PlayerDisconnected),
                     () => OnPlayerDisconnected((PlayerDisconnected)packet) },
+                {typeof(GlobalIDAttribution),
+                    () => OnGlobalIDAttribution((GlobalIDAttribution)packet) },
+                {typeof(NewBoard),
+                    () => OnNewBoard((NewBoard)packet) },
             };
             Action action;
             if(!packetSwitch.TryGetValue(packet.GetType(), out action))
@@ -272,9 +279,14 @@ namespace Polyglot
             }
         }
 
-        protected override void OnPlaceBoard(GameObject board)
+        private void OnGlobalIDAttribution(GlobalIDAttribution packet)
         {
-            IGConsole.Log($"Board placed at {board.transform.position}");
+            boardManager.GlobalIDAttribution(packet.LocalID, packet.GlobalID);
+        }
+
+        private void OnNewBoard(NewBoard packet)
+        {
+            boardManager.OnNewRemoteBoard(packet);
         }
     }
 }

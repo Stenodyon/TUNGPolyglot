@@ -54,6 +54,15 @@ namespace PolyglotServer
                 player.SendPacket(packet);
         }
 
+        public void BroadcastExcept(Player exception, Packet packet)
+        {
+            foreach(Player player in players.Values)
+            {
+                if (player.ID != exception.ID)
+                    player.SendPacket(packet);
+            }
+        }
+
         public void Stop()
         {
             started = false;
@@ -84,12 +93,16 @@ namespace PolyglotServer
 
         public void OnReceivedPacket(Player player, Packet packet)
         {
+            if (packet.GetType() != typeof(PlayerPosition))
+                Console.WriteLine($"Received {packet.GetType().ToString()}");
             var packetSwitch = new Dictionary<Type, Action>
             {
                 {typeof(IDAttibutionACK),
                     () => OnIDAttributionACK(player, (IDAttibutionACK)packet) },
                 {typeof(PlayerPosition),
                     () => OnPlayerPosition(player, (PlayerPosition)packet) },
+                {typeof(NewBoard),
+                    () => OnNewBoard(player, (NewBoard)packet) },
             };
             Action action;
             if(!packetSwitch.TryGetValue(packet.GetType(), out action))
@@ -130,6 +143,28 @@ namespace PolyglotServer
                     continue;
                 otherPlayer.SendPacket(packet);
             }
+        }
+
+        private static int BoardID = 0;
+
+        private static int NewGlobalID()
+        {
+            return BoardID++;
+        }
+
+        private void OnNewBoard(Player player, NewBoard packet)
+        {
+            int globalID = NewGlobalID();
+            player.SendPacket(new GlobalIDAttribution { LocalID = packet.ID, GlobalID = globalID });
+            BroadcastExcept(player, new NewBoard
+            {
+                ID = globalID,
+                Parent = packet.Parent,
+                Width = packet.Width,
+                Height = packet.Height,
+                Position = packet.Position,
+                Angles = packet.Angles
+            });
         }
     }
 }

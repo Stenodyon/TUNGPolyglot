@@ -19,7 +19,7 @@ namespace PolyglotCommon
     }
 
     [Serializable]
-    public class IDAttibutionACK : Packet {}
+    public class IDAttibutionACK : Packet { }
 
     [Serializable]
     public class NewPlayer : Packet
@@ -62,5 +62,20 @@ namespace PolyglotCommon
     {
         public string Reason { get; set; }
         public DisconnectPacket(string reason) { this.Reason = reason; }
+    }
+
+    [Serializable]
+    public class NewBoard : Packet
+    {
+        public int ID;
+        public int Parent = -1;
+        public int Width, Height;
+        public v3 Position, Angles;
+    }
+
+    [Serializable]
+    public class GlobalIDAttribution : Packet
+    {
+        public int LocalID, GlobalID;
     }
 }
