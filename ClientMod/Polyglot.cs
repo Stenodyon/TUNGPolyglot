@@ -11,10 +11,11 @@ namespace Polyglot
 {
     public class Polyglot : Mod
     {
+        private static readonly Version Version = Assembly.GetExecutingAssembly().GetName().Version;
 
         public override string Name => "Polyglot";
         public override string Author => "Stenodyon";
-        public override Version ModVersion => new Version(0, 1, 0);
+        public override Version ModVersion => Version;
         public override Version FrameworkVersion => PiTung.FrameworkVersion;
 
         private bool initialized = false;
@@ -39,16 +40,6 @@ namespace Polyglot
                 initialized = true;
             }
             client.Update();
-        }
-
-        public override void OnGUI()
-        {
-            if (ModUtilities.IsOnMainMenu)
-            {
-                string text = "Polyglot Loaded (TAB for console)";
-                ModUtilities.Graphics.DrawText(text, new Vector2(6, 21), Color.black);
-                ModUtilities.Graphics.DrawText(text, new Vector2(5, 20), Color.white);
-            }
         }
 
         private class Command_find : Command

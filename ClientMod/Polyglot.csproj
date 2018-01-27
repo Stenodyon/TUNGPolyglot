@@ -78,4 +78,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>"C:\Program Files\Python36\python.exe" $(SolutionDir)\ClientMod\build_inc.py</PreBuildEvent>
+  </PropertyGroup>
 </Project>
