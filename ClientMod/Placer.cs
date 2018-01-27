@@ -56,8 +56,8 @@ namespace Polyglot
             Vector3 position, Quaternion rotation, Transform parent = null)
         {
             GameObject board = UnityEngine.Object.Instantiate(boardPlacer.BoardPrefab, parent);
-            board.transform.localPosition = position;
-            board.transform.localRotation = rotation;
+            board.transform.position = position;
+            board.transform.rotation = rotation;
             CircuitBoard circuit = board.GetComponent<CircuitBoard>();
             circuit.x = width;
             circuit.z = height;
@@ -68,6 +68,21 @@ namespace Polyglot
             MegaBoardMeshManager.AddBoardsFrom(board);
             SetChildCircuitsMegaMeshStatus(board, true);
             return board;
+        }
+
+        public void MoveBoard(GameObject board, Vector3 position, Quaternion rotation, Transform parent = null)
+        {
+            MegaMesh.RemoveMeshesFrom(board);
+            MegaBoardMeshManager.RemoveBoardsFrom(board);
+            SetChildCircuitsMegaMeshStatus(board, false);
+            board.transform.parent = parent;
+            board.transform.position = position;
+            board.transform.rotation = rotation;
+            StuffPlacer.DestroyIntersectingConnections(board);
+            DestroyInvalidWiresOnBoard(board);
+            MegaMesh.AddMeshesFrom(board);
+            MegaBoardMeshManager.AddBoardsFrom(board);
+            SetChildCircuitsMegaMeshStatus(board, true);
         }
 
         public void DeleteBoard(GameObject board)

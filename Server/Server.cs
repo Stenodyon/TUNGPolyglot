@@ -105,6 +105,8 @@ namespace PolyglotServer
                     () => OnNewBoard(player, (NewBoard)packet) },
                 {typeof(DeleteBoard),
                     () => OnDeleteBoard(player, (DeleteBoard)packet) },
+                {typeof(MovedBoard),
+                    () => OnMovedBoard(player, (MovedBoard)packet) },
             };
             Action action;
             if(!packetSwitch.TryGetValue(packet.GetType(), out action))
@@ -172,6 +174,11 @@ namespace PolyglotServer
         private void OnDeleteBoard(Player player, DeleteBoard packet)
         {
             Broadcast(packet);
+        }
+
+        private void OnMovedBoard(Player player, MovedBoard packet)
+        {
+            BroadcastExcept(player, packet);
         }
     }
 }

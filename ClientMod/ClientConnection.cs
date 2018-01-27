@@ -203,6 +203,8 @@ namespace Polyglot
                     () => OnNewBoard((NewBoard)packet) },
                 {typeof(DeleteBoard),
                     () => OnDeleteBoard((DeleteBoard)packet) },
+                {typeof(MovedBoard),
+                    () => OnMovedBoard((MovedBoard)packet) },
             };
             Action action;
             if(!packetSwitch.TryGetValue(packet.GetType(), out action))
@@ -301,6 +303,11 @@ namespace Polyglot
         private void OnDeleteBoard(DeleteBoard packet)
         {
             boardManager.DeleteRemoteBoard(packet.ID);
+        }
+
+        private void OnMovedBoard(MovedBoard packet)
+        {
+            boardManager.OnRemoteMovedBoard(packet);
         }
     }
 }

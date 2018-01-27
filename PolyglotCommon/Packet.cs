@@ -84,4 +84,12 @@ namespace PolyglotCommon
     {
         public int ID;
     }
+
+    [Serializable]
+    public class MovedBoard : Packet
+    {
+        public int ID;
+        public int Parent = -1;
+        public v3 Position, Rotation;
+    }
 }
