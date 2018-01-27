@@ -103,6 +103,8 @@ namespace PolyglotServer
                     () => OnPlayerPosition(player, (PlayerPosition)packet) },
                 {typeof(NewBoard),
                     () => OnNewBoard(player, (NewBoard)packet) },
+                {typeof(DeleteBoard),
+                    () => OnDeleteBoard(player, (DeleteBoard)packet) },
             };
             Action action;
             if(!packetSwitch.TryGetValue(packet.GetType(), out action))
@@ -165,6 +167,11 @@ namespace PolyglotServer
                 Position = packet.Position,
                 Angles = packet.Angles
             });
+        }
+
+        private void OnDeleteBoard(Player player, DeleteBoard packet)
+        {
+            Broadcast(packet);
         }
     }
 }

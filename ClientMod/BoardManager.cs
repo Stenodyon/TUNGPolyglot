@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using PolyglotCommon;
+using PiTung_Bootstrap.Console;
 
 namespace Polyglot
 {
@@ -41,14 +42,16 @@ namespace Polyglot
             netComp.localID = NewUniqueID();
             pendingID.Add(netComp.localID, board);
             CircuitBoard comp = board.GetComponent<CircuitBoard>();
+            v3 position = parentID == -1 ? board.transform.position : board.transform.localPosition;
+            v3 rotation = parentID == -1 ? board.transform.eulerAngles : board.transform.localEulerAngles;
             client.SendPacket(new NewBoard
             {
                 ID = netComp.localID,
                 Parent = parentID,
                 Width = comp.x,
                 Height = comp.z,
-                Position = board.transform.position,
-                Angles = board.transform.eulerAngles
+                Position = position,
+                Angles = rotation
             });
         }
 
@@ -61,7 +64,25 @@ namespace Polyglot
                 if(boards.TryGetValue(packet.ID, out parentBoard))
                     parent = parentBoard.Obj.transform;
             }
-            placer.Board(packet.Width, packet.Height, packet.Position, Quaternion.Euler(packet.Angles), parent);
+            GameObject board = placer.Board(packet.Width, packet.Height, packet.Position, Quaternion.Euler(packet.Angles), parent);
+            NetComponent comp = board.AddComponent<NetComponent>();
+            comp.globalID = packet.ID;
+            boards.Add(packet.ID, new NetBoard(packet.ID, board));
+        }
+
+        public void DeleteRemoteBoard(int ID)
+        {
+            NetBoard board;
+            if (boards.TryGetValue(ID, out board))
+            {
+                if(board.Obj != null)
+                    placer.DeleteBoard(board.Obj);
+                boards.Remove(ID);
+            }
+            else
+            {
+                IGConsole.Error("Could not find board to delete");
+            }
         }
 
         private int NewUniqueID()
@@ -76,6 +97,8 @@ namespace Polyglot
             {
                 pendingID.Remove(localID);
                 boards.Add(globalID, new NetBoard(globalID, pendingBoard));
+                NetComponent comp = pendingBoard.GetComponent<NetComponent>();
+                comp.globalID = globalID;
             }
         }
 
@@ -84,6 +107,17 @@ namespace Polyglot
             NetComponent netComp = board.GetComponent<NetComponent>();
             if (netComp == null)
                 OnNewLocalBoard(board);
+        }
+
+        protected override void OnDeleteBoard(GameObject board)
+        {
+            NetComponent comp = board.GetComponent<NetComponent>();
+            if(comp != null)
+            {
+                IGConsole.Log("Found netcomp");
+                if(comp.globalID != -1)
+                    client.SendPacket(new DeleteBoard { ID = comp.globalID });
+            }
         }
     }
 }

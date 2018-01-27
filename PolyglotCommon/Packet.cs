@@ -78,4 +78,10 @@ namespace PolyglotCommon
     {
         public int LocalID, GlobalID;
     }
+
+    [Serializable]
+    public class DeleteBoard : Packet
+    {
+        public int ID;
+    }
 }

@@ -20,7 +20,7 @@ namespace Polyglot
         [HarmonyPatch(typeof(BoardPlacer), "PlaceBoard")]
         private class PlaceBoardPatch
         {
-            private static void Prefix(BoardPlacer __instance)
+            private static void Prefix()
             {
                 if (BoardPlacer.BoardBeingPlaced == null)
                     IGConsole.Log("null board?");
@@ -29,6 +29,20 @@ namespace Polyglot
             }
         }
 
+        [HarmonyPatch(typeof(BoardPlacer), "CancelPlacement")]
+        private class DeleteBoardPatch
+        {
+            static void Prefix()
+            {
+                IGConsole.Log("Deleting board");
+                if (BoardPlacer.BoardBeingPlaced == null)
+                    IGConsole.Log("null board?");
+                foreach (BuildListener listener in instances)
+                    listener.OnDeleteBoard(BoardPlacer.BoardBeingPlaced);
+            }
+        }
+
         protected abstract void OnPlaceBoard(GameObject board);
+        protected abstract void OnDeleteBoard(GameObject board);
     }
 }

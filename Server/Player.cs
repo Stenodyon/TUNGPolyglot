@@ -83,7 +83,8 @@ namespace PolyglotServer
                     try
                     {
                         formatter.Serialize(client.GetStream(), packet);
-                        //Console.WriteLine($"Sent {packet.GetType().ToString()}");
+                        if(packet.GetType() != typeof(PlayerPosition))
+                            Console.WriteLine($"Sent {packet.GetType().ToString()}");
                     } catch(IOException) // Connection terminated
                     {
                         Disconnect();

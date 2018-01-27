@@ -113,7 +113,10 @@ namespace Polyglot
                     try
                     {
                         formatter.Serialize(client.GetStream(), packet);
-                        //Console.Log($"Sent {packet.GetType().ToString()}");
+#if DEBUG
+                        if(packet.GetType() != typeof(PlayerPosition))
+                            IGConsole.Log($"Sent {packet.GetType().ToString()}");
+#endif
                     } catch(Exception e)
                     {
                         IGConsole.Error(e.ToString());
@@ -178,6 +181,10 @@ namespace Polyglot
 
         private void OnPacketReceived(Packet packet)
         {
+#if DEBUG
+            if (packet.GetType() != typeof(PlayerPosition))
+                IGConsole.Log($"Received {packet.GetType()}");
+#endif
             var packetSwitch = new Dictionary<Type, Action>
             {
                 {typeof(PlayerIDAttribution),
@@ -194,6 +201,8 @@ namespace Polyglot
                     () => OnGlobalIDAttribution((GlobalIDAttribution)packet) },
                 {typeof(NewBoard),
                     () => OnNewBoard((NewBoard)packet) },
+                {typeof(DeleteBoard),
+                    () => OnDeleteBoard((DeleteBoard)packet) },
             };
             Action action;
             if(!packetSwitch.TryGetValue(packet.GetType(), out action))
@@ -287,6 +296,11 @@ namespace Polyglot
         private void OnNewBoard(NewBoard packet)
         {
             boardManager.OnNewRemoteBoard(packet);
+        }
+
+        private void OnDeleteBoard(DeleteBoard packet)
+        {
+            boardManager.DeleteRemoteBoard(packet.ID);
         }
     }
 }
