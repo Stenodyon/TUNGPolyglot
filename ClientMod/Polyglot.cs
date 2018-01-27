@@ -28,8 +28,8 @@ namespace Polyglot
         {
             client = new Client();
             placer = new Placer();
-            IGConsole.RegisterCommand(new Command_find());
-            IGConsole.RegisterCommand(new Command_findobj());
+            IGConsole.RegisterCommand<Command_find>();
+            IGConsole.RegisterCommand<Command_findobj>();
             IGConsole.Log($"Polyglot v{Version.ToString()} initialized");
         }
 
