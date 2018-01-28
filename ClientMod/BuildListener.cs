@@ -74,14 +74,43 @@ namespace Polyglot
             }
         }
 
+        [HarmonyPatch(typeof(StuffDeleter), "DeleteThing")]
+        private class DeleteThingPatch
+        {
+            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> original)
+            {
+                MethodInfo method = typeof(BuildListener).GetMethod("ItemDeleted", BindingFlags.Static | BindingFlags.NonPublic);
+                if (method == null)
+                    throw new NullReferenceException("Could not get BuildListener.ItemDeleted");
+                List<CodeInstruction> _original = original.ToList();
+                _original.Insert(_original.Count - 1, new CodeInstruction(OpCodes.Ldarg_0)); // argument 0 is the gameobject
+                _original.Insert(_original.Count - 1, new CodeInstruction(OpCodes.Call, method));
+                return _original;
+            }
+        }
+
         private static void ItemPlaced(GameObject obj)
         {
             foreach (var listener in instances)
                 listener.OnPlaceObject(obj);
         }
 
-        protected abstract void OnPlaceBoard(GameObject board);
-        protected abstract void OnDeleteBoard(GameObject board);
-        protected abstract void OnPlaceObject(GameObject obj);
+        private static void ItemDeleted(GameObject obj)
+        {
+            if (obj.tag == "CircuitBoard")
+            {
+                foreach (var listener in instances)
+                    listener.OnDeleteBoard(obj);
+            }
+            else if (obj.tag == "Wire")
+                IGConsole.Log("Deleted wire");
+            else
+                IGConsole.Log("Deleted item");
+        }
+
+        protected virtual void OnPlaceBoard(GameObject board) {}
+        protected virtual void OnDeleteBoard(GameObject board) {}
+        protected virtual void OnPlaceObject(GameObject obj) {}
+        protected virtual void OnDeleteObject(GameObject obj) {}
     }
 }

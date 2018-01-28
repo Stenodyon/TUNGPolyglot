@@ -189,11 +189,6 @@ namespace Polyglot
             }
         }
 
-        protected override void OnPlaceObject(GameObject obj)
-        {
-            throw new NotImplementedException();
-        }
-
         private class Command_lsboard : Command
         {
             public override string Name => "lsboard";
