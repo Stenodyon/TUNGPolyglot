@@ -103,14 +103,22 @@ namespace Polyglot
                     listener.OnDeleteBoard(obj);
             }
             else if (obj.tag == "Wire")
-                IGConsole.Log("Deleted wire");
+            {
+                foreach (var listener in instances)
+                    listener.OnDeleteWire(obj);
+            }
             else
-                IGConsole.Log("Deleted item");
+            {
+                foreach (var listener in instances)
+                    listener.OnDeleteObject(obj);
+            }
         }
 
         protected virtual void OnPlaceBoard(GameObject board) {}
         protected virtual void OnDeleteBoard(GameObject board) {}
         protected virtual void OnPlaceObject(GameObject obj) {}
         protected virtual void OnDeleteObject(GameObject obj) {}
+        protected virtual void OnPlaceWire(GameObject wire) {}
+        protected virtual void OnDeleteWire(GameObject wire) {}
     }
 }
