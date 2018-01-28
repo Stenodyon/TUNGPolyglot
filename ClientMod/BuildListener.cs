@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Linq;
 using System.Text;
 using PiTung_Bootstrap.Console;
 using UnityEngine;
 using Harmony;
+using System.Reflection.Emit;
 
 namespace Polyglot
 {
@@ -42,7 +44,44 @@ namespace Polyglot
             }
         }
 
+        [HarmonyPatch(typeof(StuffPlacer), "PlaceOnBoard")]
+        private class PlaceOnBoardPatch
+        {
+            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> original)
+            {
+                MethodInfo method = typeof(BuildListener).GetMethod("ItemPlaced", BindingFlags.Static | BindingFlags.NonPublic);
+                if (method == null)
+                    throw new NullReferenceException("Could not get BuildListener.ItemPlaced");
+                List<CodeInstruction> _original = original.ToList();
+                _original.Insert(_original.Count - 1, new CodeInstruction(OpCodes.Ldloc_S, 0x04)); // index 4 is the gameobject
+                _original.Insert(_original.Count - 1, new CodeInstruction(OpCodes.Call, method));
+                return _original;
+            }
+        }
+
+        [HarmonyPatch(typeof(StuffPlacer), "PlaceOnOther")]
+        private class PlaceOnOtherPatch
+        {
+            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> original)
+            {
+                MethodInfo method = typeof(BuildListener).GetMethod("ItemPlaced", BindingFlags.Static | BindingFlags.NonPublic);
+                if (method == null)
+                    throw new NullReferenceException("Could not get BuildListener.ItemPlaced");
+                List<CodeInstruction> _original = original.ToList();
+                _original.Insert(_original.Count - 1, new CodeInstruction(OpCodes.Ldloc_0)); // local variable 0 is the gameobject
+                _original.Insert(_original.Count - 1, new CodeInstruction(OpCodes.Call, method));
+                return _original;
+            }
+        }
+
+        private static void ItemPlaced(GameObject obj)
+        {
+            foreach (var listener in instances)
+                listener.OnPlaceObject(obj);
+        }
+
         protected abstract void OnPlaceBoard(GameObject board);
         protected abstract void OnDeleteBoard(GameObject board);
+        protected abstract void OnPlaceObject(GameObject obj);
     }
 }
