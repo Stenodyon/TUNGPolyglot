@@ -64,6 +64,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="ClientConnection.cs" />
     <Compile Include="BuildListener.cs" />
+    <Compile Include="IDManager.cs" />
     <Compile Include="NetBoard.cs" />
     <Compile Include="NetComponent.cs" />
     <Compile Include="Placer.cs" />
