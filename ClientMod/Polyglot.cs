@@ -5,8 +5,6 @@ using System.Reflection;
 using PiTung;
 using PiTung.Console;
 using UnityEngine;
-using Harmony;
-using UnityEngine.SceneManagement;
 
 namespace Polyglot
 {

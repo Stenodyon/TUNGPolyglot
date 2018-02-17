@@ -9,7 +9,7 @@ namespace PolyglotCommon
     [Serializable]
     public class v3
     {
-        float x, y, z;
+        public float x, y, z;
         public v3(float x, float y, float z)
         {
             this.x = x; this.y = y; this.z = z;
