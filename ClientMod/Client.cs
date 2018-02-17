@@ -6,7 +6,7 @@ using System.Text;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Net;
-using PiTung_Bootstrap.Console;
+using PiTung.Console;
 
 namespace Polyglot
 {
@@ -19,8 +19,8 @@ namespace Polyglot
 
         public Client()
         {
-            IGConsole.RegisterCommand(new Command_connect());
-            IGConsole.RegisterCommand(new Command_disconnect());
+            IGConsole.RegisterCommand<Command_connect>(Polyglot.INSTANCE);
+            IGConsole.RegisterCommand<Command_disconnect>(Polyglot.INSTANCE);
             savesPath = Application.persistentDataPath + "/saves/multiplayer";
         }
 

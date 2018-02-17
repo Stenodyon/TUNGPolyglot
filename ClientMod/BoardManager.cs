@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using PolyglotCommon;
-using PiTung_Bootstrap.Console;
+using PiTung.Console;
 
 namespace Polyglot
 {
@@ -28,7 +28,7 @@ namespace Polyglot
 
             placer = new Placer();
 
-            IGConsole.RegisterCommand(new Command_lsboard(this));
+            IGConsole.RegisterCommand(new Command_lsboard(this), Polyglot.INSTANCE);
         }
 
         public int GetParent(GameObject board)

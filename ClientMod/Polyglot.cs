@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using PiTung_Bootstrap;
-using PiTung_Bootstrap.Console;
+using PiTung;
+using PiTung.Console;
 using UnityEngine;
 using Harmony;
 using UnityEngine.SceneManagement;
@@ -17,33 +17,23 @@ namespace Polyglot
         public override string Name => "Polyglot";
         public override string Author => "Stenodyon";
         public override Version ModVersion => Version;
-        public override Version FrameworkVersion => PiTung.FrameworkVersion;
-
-        private static bool initialized = false;
+        public override Version FrameworkVersion => PiTUNG.FrameworkVersion;
+        public override string PackageName => "me.Stenodyon.Polyglot";
 
         private static Client client;
         public static Placer placer { get; private set; }
 
-        public static void Init()
+        public static Polyglot INSTANCE { get; private set; }
+
+        public override void AfterPatch()
         {
+            INSTANCE = this;
+
             client = new Client();
             placer = new Placer();
-            IGConsole.RegisterCommand<Command_find>();
-            IGConsole.RegisterCommand<Command_findobj>();
+            IGConsole.RegisterCommand<Command_find>(this);
+            IGConsole.RegisterCommand<Command_findobj>(this);
             IGConsole.Log($"Polyglot v{Version.ToString()} initialized");
-        }
-
-        [HarmonyPatch(typeof(DummyComponent), "Awake")]
-        class InitPatch
-        {
-            static void Postfix()
-            {
-                if (!initialized)
-                {
-                    Init();
-                    initialized = true;
-                }
-            }
         }
 
         public override void Update()

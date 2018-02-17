@@ -5,7 +5,7 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using PiTung_Bootstrap.Console;
+using PiTung.Console;
 
 namespace Polyglot
 {
@@ -16,7 +16,7 @@ namespace Polyglot
 
         public Placer()
         {
-            IGConsole.RegisterCommand(new Command_tryplace(this));
+            IGConsole.RegisterCommand(new Command_tryplace(this), Polyglot.INSTANCE);
             if (SceneManager.GetActiveScene().name == "gameplay")
                 Init();
             else

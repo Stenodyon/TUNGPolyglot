@@ -37,8 +37,8 @@
     <Reference Include="Assembly-CSharp.original">
       <HintPath>..\lib\Assembly-CSharp.original.dll</HintPath>
     </Reference>
-    <Reference Include="PiTung Bootstrap">
-      <HintPath>..\lib\PiTung Bootstrap.dll</HintPath>
+    <Reference Include="PiTung">
+      <HintPath>..\lib\PiTung.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

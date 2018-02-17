@@ -9,7 +9,7 @@ using PolyglotCommon;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using PiTung_Bootstrap.Console;
+using PiTung.Console;
 
 namespace Polyglot
 {
